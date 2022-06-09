@@ -9,6 +9,7 @@
 @using System.Text;
 @using System.Threading.Tasks;
 @using System.Windows;
+@using System.ComponentModel.DataAnnotations
 
 <PageTitle>PDF Processing Page</PageTitle>
 
@@ -42,6 +43,38 @@
         Document Contains Images
     </label>
 </div>
+<div>
+    <text>&nbsp; &nbsp;&nbsp;</text>
+</div>
+<div>
+    @foreach (var choice in new[] { Processes.Replace, Processes.Remove, Processes.Move, Processes.None })
+    {
+        <label style="margin: 10px">
+            <input name="processChoice" type="radio"
+            value="@choice"
+            checked="@(currentChoice == choice)"
+            @onchange="@(() => {currentChoice = choice; })">
+            @choice.ToString()
+        </label>
+    
+    }
+</div>
+<div>
+    <text>&nbsp; &nbsp;&nbsp;</text>
+</div>
+<div>
+    @foreach (var choice in new[] { Pagination.Pagination, Pagination.Repagination, Pagination.None })
+    {
+        <label style="margin: 10px">
+            <input name="paginationChoice" type="radio"
+            value="@choice"
+            checked="@(newChoice == choice)"
+            @onchange="@(() => {newChoice = choice; })">
+            @choice.ToString()
+        </label>
+    }
+</div>
+
 <text>&nbsp; &nbsp;&nbsp;</text>
 <div >
     <div style="margin-left: 10px; margin-right: 40px">
@@ -56,9 +89,13 @@
 @code {
     string? outputText;
     public bool containsImages { get; set; }
+    enum Processes { Replace, Remove, Move, None };
+    enum Pagination { Pagination, Repagination, None }
+    Processes currentChoice = Processes.None;
+    Pagination newChoice = Pagination.None;
 
     private async Task OnFileSelection(InputFileChangeEventArgs e)
     {
-        
+
     }
 }
