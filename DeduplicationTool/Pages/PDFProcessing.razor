@@ -1,0 +1,64 @@
+﻿@page "/processingpage"
+@using DeduplicationTool.Models
+@using Microsoft.Win32;
+@using System;
+@using System.Collections.Generic;
+@using System.ComponentModel;
+@using System.IO;
+@using System.Linq;
+@using System.Text;
+@using System.Threading.Tasks;
+@using System.Windows;
+
+<PageTitle>PDF Processing Page</PageTitle>
+
+<style>
+    body {
+        background-color: #292C33;
+        color: white;
+    }
+    div {text-align: left; }
+    textarea { resize: none; font-size: 16px; }
+    .btn:focus {
+        background-color: #ff6e40;
+    }
+    .btn {
+        background-color: #4d7985;
+    }
+</style>
+
+<h3>PDF Processing</h3>
+
+<text>&nbsp; &nbsp;&nbsp;</text>
+
+<div>
+    <InputFile OnChange="@OnFileSelection"></InputFile>
+</div>
+
+<text>&nbsp; &nbsp;&nbsp;</text>
+<div class="form-check">
+    <input class="form-check-input" type="checkbox" @bind-value="containsImages" id="imageCheck" />
+    <label class="form-check-label" for="imageCheck">
+        Document Contains Images
+    </label>
+</div>
+<text>&nbsp; &nbsp;&nbsp;</text>
+<div >
+    <div style="margin-left: 10px; margin-right: 40px">
+       <p>Analysis Results</p>
+       <textarea cols="100" rows="15" @bind="outputText"></textarea>
+    </div>
+</div>
+<text>&nbsp; &nbsp;&nbsp;</text>
+
+<text>&nbsp; &nbsp;&nbsp;</text>
+
+@code {
+    string? outputText;
+    public bool containsImages { get; set; }
+
+    private async Task OnFileSelection(InputFileChangeEventArgs e)
+    {
+        
+    }
+}

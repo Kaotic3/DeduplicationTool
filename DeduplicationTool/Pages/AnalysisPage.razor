@@ -1,0 +1,144 @@
+﻿@page "/analysispage"
+@using DeduplicationTool.Models
+@using Microsoft.Win32;
+@using System;
+@using System.Collections.Generic;
+@using System.ComponentModel;
+@using System.IO;
+@using System.Linq;
+@using System.Text;
+@using System.Threading.Tasks;
+@using System.Windows;
+
+<PageTitle>PDF Analysis Page</PageTitle>
+
+<style>
+    body {
+        background-color: #292C33;
+        color: white;
+    }
+    div {text-align: left; }
+    textarea { resize: none; font-size: 16px; }
+    .btn:focus {
+        background-color: #ff6e40;
+    }
+    .btn {
+        background-color: #4d7985;
+    }
+</style>
+
+<h3>PDF Analysis</h3>
+
+<text>&nbsp; &nbsp;&nbsp;</text>
+
+<div>
+    <InputFile OnChange="@OnFileSelection"></InputFile>
+</div>
+
+<text>&nbsp; &nbsp;&nbsp;</text>
+<div class="form-check">
+    <input class="form-check-input" type="checkbox" @bind-value="containsImages" id="imageCheck" />
+    <label class="form-check-label" for="imageCheck">
+        Document Contains Images
+    </label>
+</div>
+<text>&nbsp; &nbsp;&nbsp;</text>
+<div >
+    <div style="margin-left: 10px; margin-right: 40px">
+       <p>Analysis Results</p>
+       <textarea cols="100" rows="15" @bind="outputText"></textarea>
+    </div>
+</div>
+<text>&nbsp; &nbsp;&nbsp;</text>
+
+<text>&nbsp; &nbsp;&nbsp;</text>
+@*<div class="col-lg-3">
+        <div class="form-group" style="margin-left: 10px; margin-right: 40px">
+            <button class="btn btn-primary" @onclick="Reset">Reset</button>
+        </div>
+    </div>*@
+
+
+
+@code {
+    public string? outputText;
+    public string? statusOut;
+    public bool containsImages { get; set; }
+    public string[] pdfUniqueArray;
+
+    private async Task OnFileSelection(InputFileChangeEventArgs e)
+    {
+        Reset();
+        HashSet<string> results = new HashSet<string>();
+        StringBuilder sb = new StringBuilder();
+        PDFAnalysis pdfA = new PDFAnalysis();
+        int pageCount = 0;
+        IBrowserFile pdfFile = e.File;
+        outputText += $"Processing {pdfFile.Name}" + Environment.NewLine + Environment.NewLine;
+
+        var countResult = await pdfA.PDFPageCount(pdfFile);
+
+        outputText += $"The file \"{pdfFile.Name}\" contains {countResult} page(s)" + Environment.NewLine + Environment.NewLine;
+        StateHasChanged();
+
+        if (containsImages == false)
+        {
+            var uniquePagesResult = await pdfA.PDFUniquePagesHash(pdfFile);
+            pdfUniqueArray = uniquePagesResult.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+        else
+        {
+            var uniqueImagesResult = await pdfA.PDFUniquePagesShaImages(pdfFile);
+            pdfUniqueArray = uniqueImagesResult.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+        }
+        List<string> pages = new List<string>(pdfUniqueArray);
+        List<string> matched = new List<string>();
+        var distinctPages = pdfUniqueArray.Distinct().ToArray();
+        int itemNumber = 1;
+        foreach (var item1 in pdfUniqueArray)
+        {
+            if (!matched.Contains(item1))
+            {
+                int count = 0;
+                int index = 0;
+                foreach (var item2 in pages)
+                {
+                    if (item1 == item2)
+                    {
+                        matched.Add(item1);
+                        count++;
+                        if (count > 1)
+                        {
+                            sb.Append($"Page {itemNumber} repeated at page {index + 1}" + Environment.NewLine);
+                        }
+                    }
+                    index++;
+                }
+            }
+            itemNumber++;
+        }
+        var uniqCount = distinctPages.Count();
+        if (uniqCount == 1)
+        {
+            outputText += $"There is {distinctPages.Count()} unique page." + Environment.NewLine + Environment.NewLine;
+        }
+        else
+        {
+            outputText += $"There are {distinctPages.Count()} unique pages." + Environment.NewLine + Environment.NewLine;
+        }
+        if (distinctPages.Count() == pdfUniqueArray.Count())
+        {
+            outputText += $"There are no duplicate pages in the document." + Environment.NewLine + Environment.NewLine;
+        }
+        else
+        {
+            outputText += sb.ToString();
+        }
+        outputText += "Processing Complete";
+    }
+    public void Reset()
+    {
+        outputText = "";
+    }
+
+}

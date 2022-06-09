@@ -7,8 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="itext7" Version="7.2.2" />
+    <PackageReference Include="itext7.commons" Version="7.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.1" PrivateAssets="all" />
+    <PackageReference Include="Syncfusion.Blazor.Inputs" Version="20.1.0.59" />
+    <PackageReference Include="Syncfusion.Blazor.PdfViewer" Version="20.1.0.59" />
+    <PackageReference Include="Syncfusion.Blazor.PdfViewerServer.Windows" Version="20.1.0.59" />
+    <PackageReference Include="Syncfusion.Blazor.Themes" Version="20.1.0.59" />
   </ItemGroup>
 
 </Project>
