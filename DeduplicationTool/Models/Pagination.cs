@@ -86,15 +86,16 @@ namespace DeduplicationTool.Models
         // TODO: You got it for a single page - now do it for multiple pages.
 
 
-        public static byte[] RepaginateMovedPages(MemoryStream pdfFile, int pageCount, List<int> pagesMoved)
+        public static byte[] RepaginateMovedPages(byte[] pdfFile, int pageCount, List<int> pagesMoved)
         {
-            List<int> pageToCount = new List<int>();
-            List<int> pagesToMiss = new List<int>();
+            var inStream = new MemoryStream();
+            inStream.Position = 0;
+            inStream.Write(pdfFile);
             var outStream = new MemoryStream();
             int k = 1;
             try
             {
-                using (var pdfOut = new PdfDocument(new PdfReader(pdfFile), new PdfWriter(outStream)))
+                using (var pdfOut = new PdfDocument(new PdfReader(inStream), new PdfWriter(outStream)))
                 {
                     Document document = new Document(pdfOut);
 

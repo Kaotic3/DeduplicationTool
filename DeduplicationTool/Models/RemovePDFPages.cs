@@ -1,4 +1,5 @@
-﻿using iText.Kernel.Pdf;
+﻿using iText.Kernel.Geom;
+using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using Microsoft.AspNetCore.Components.Forms;
@@ -7,7 +8,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using iText.Layout;
 using System.Threading.Tasks;
+using iText.Layout.Element;
+using iText.Layout.Properties;
 
 namespace DeduplicationTool.Models
 {
@@ -121,19 +125,22 @@ namespace DeduplicationTool.Models
             }
             return outStream;
         }
-        public async Task<(MemoryStream, string)> RemoveRepaginateText(MemoryStream pdfFile)
+        public async Task<(MemoryStream, string, int)> RemoveRepaginateText(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
+            PDFAnalysis analysisModel = new PDFAnalysis();
             HashSet<string> pages = new HashSet<string>();
             List<string> duplicatePages = new List<string>();
             StringBuilder pagesRemoved = new StringBuilder();
             StringBuilder textBuilder = new StringBuilder();
             var outStream = new MemoryStream();
-
+            int pageCount;
+            outStream.Position = 0;
             using (var pdfIn = new PdfDocument(new PdfReader(pdfFile)))
             {
                 using (var pdfOut = new PdfDocument(new PdfWriter(outStream)))
                 {
+                    Document document = new Document(pdfOut);
                     for (int page = 1; page <= pdfIn.GetNumberOfPages(); page++)
                     {
                         textBuilder.Clear();
@@ -162,15 +169,42 @@ namespace DeduplicationTool.Models
                             {
 
                             }
+                            
+
                         }
                         catch (Exception ex)
                         {
-
+                            
                         }
                     }
+                    pageCount = pdfOut.GetNumberOfPages();
+                    var pageArray = pagesRemoved.ToString().Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                    List<string> pagesAsString = new List<string>(pageArray);
+                    List<int> pagesToRemove = new List<int>();
+                    foreach (var page in pagesAsString)
+                    {
+                        pagesToRemove.Add(int.Parse(page));
+                    }
+                    int k = 1;
+                    foreach (var intPage in pagesToRemove)
+                    {
+                        if (intPage == 99999999)
+                        {
+                            k++;
+                        }
+                        else
+                        {
+                            Rectangle rectangle = pdfOut.GetPage(k).GetPageSize();
+                            var width = rectangle.GetWidth();
+                            var middle = width / 2;
+                            document.ShowTextAligned(new Paragraph(String.Format("Page " + intPage + " of " + pageCount)), middle, 7, k, TextAlignment.CENTER, VerticalAlignment.BOTTOM, 0);
+                            k++;
+                        }
+                    }
+                    return (outStream, pagesRemoved.ToString(), pageCount);
                 }
             }
-            return (outStream, pagesRemoved.ToString());
+            
         }
         public async Task<(MemoryStream, string)> RemoveRepaginateImages(MemoryStream pdfFile)
         {

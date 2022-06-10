@@ -90,7 +90,7 @@
         outputText += $"The file \"{pdfFile.Name}\" contains {countResult} page(s)" + Environment.NewLine + Environment.NewLine;
         StateHasChanged();
 
-        if (containsImages == true)
+        if (containsImages == false)
         {
             var uniquePagesResult = await analysisModel.PDFUniquePagesSha(pdfFile);
             pdfUniqueArray = uniquePagesResult.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);

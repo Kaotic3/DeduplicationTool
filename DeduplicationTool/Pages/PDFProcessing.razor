@@ -240,41 +240,34 @@
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine;
 
                     var (outputPdf, removedPages) = await removeModel.RemoveRepaginateImages(msPDF);
-                    string pageCountAsString = await analysisModel.PDFPageCount(msPDF);
-                    var outputFileToUser = $"{pdfFile.Name.Replace(".pdf", "")} Removed on Images Repaginated.pdf";
-                    int pageCount = int.Parse(pageCountAsString);
-                    var pageArray = removedPages.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-                    List<string> pagesAsString = new List<string>(pageArray);
-                    List<int> pagesToRemove = new List<int>();
-                    foreach (var page in pagesAsString)
+                    if (outputPdf != null)
                     {
-                        pagesToRemove.Add(int.Parse(page));
+                        var countResult = await analysisModel.PDFPageCount(outputPdf);
+                        int pageCount = int.Parse(countResult);
+                        var pageArray = removedPages.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                        List<string> pagesAsString = new List<string>(pageArray);
+                        List<int> pagesToRemove = new List<int>();
+                        foreach (var page in pagesAsString)
+                        {
+                            pagesToRemove.Add(int.Parse(page));
+                        }
+                        var outputArray = outputPdf.ToArray();
+                        var numberedDoc = Pagination.RepaginateMovedPages(outputArray, pageCount, pagesToRemove);
+                        var outputFileToUser = $"{pdfFile.Name.Replace(".pdf", "")} Removed on Images Repaginated.pdf";
+                        downloadFile = numberedDoc;
+                        fileName = outputFileToUser;
                     }
-                    var numberedDoc = Pagination.RepaginateMovedPages(outputPdf, pageCount, pagesToRemove);
-                    outputText += Environment.NewLine + $"File Created: " + Environment.NewLine + outputFileToUser + Environment.NewLine;
-                    downloadFile = numberedDoc;
-                    fileName = outputFileToUser;
+                    outputText += Environment.NewLine + $"File Created: " + Environment.NewLine + fileName + Environment.NewLine;
                     outputText += $"Processing Complete";
                 }
                 else
                 {
+                    // THIS IS UPDATED - NOW DO THE REST!! lol
                     outputText = "Remove Pages using text." + Environment.NewLine + "Keep original pagination." + Environment.NewLine;
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine;
-
-                    var (outputPdf, removedPages) = await removeModel.RemoveRepaginateText(msPDF);
+                    var (outputPdf, removedPages, pageCount) = await removeModel.RemoveRepaginateText(msPDF);
                     var outputFileToUser = $"{pdfFile.Name.Replace(".pdf", "")} Removed on Text Repaginated.pdf";
-                    string pageCountAsString = await analysisModel.PDFPageCount(msPDF);
-                    int pageCount = int.Parse(pageCountAsString);
-                    var pageArray = removedPages.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-                    List<string> pagesAsString = new List<string>(pageArray);
-                    List<int> pagesToRemove = new List<int>();
-                    foreach (var page in pagesAsString)
-                    {
-                        pagesToRemove.Add(int.Parse(page));
-                    }
-                    var numberedDoc = Pagination.RepaginateMovedPages(outputPdf, pageCount, pagesToRemove);
-                    outputText += Environment.NewLine + $"File Created: " + Environment.NewLine + outputFileToUser + Environment.NewLine;
-                    downloadFile = numberedDoc;
+                    downloadFile = outputPdf.ToArray();
                     fileName = outputFileToUser;
                     outputText += $"Processing Complete";
                 }
@@ -346,7 +339,7 @@
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine;
 
                     var (outputPdf, pagesToCopy) = await moveModel.MoveRepaginateImages(msPDF);
-                    string pageCountAsString = await analysisModel.PDFPageCount(msPDF);
+                    string pageCountAsString = await analysisModel.PDFPageCount(outputPdf);
                     int pageCount = int.Parse(pageCountAsString);
                     var pageArray = pagesToCopy.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     List<string> pagesAsString = new List<string>(pageArray);
@@ -356,7 +349,8 @@
                     {
                         pagesToRemove.Add(int.Parse(page));
                     }
-                    var numberedDoc = Pagination.RepaginateMovedPages(outputPdf, pageCount, pagesToRemove);
+                    var outputArray = outputPdf.ToArray();
+                    var numberedDoc = Pagination.RepaginateMovedPages(outputArray, pageCount, pagesToRemove);
                     outputText += Environment.NewLine + $"File Created: " + Environment.NewLine + outputFileToUser + Environment.NewLine;
                     downloadFile = numberedDoc;
                     fileName = outputFileToUser;
@@ -368,7 +362,7 @@
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine;
 
                     var (outputPdf, pagesToCopy) = await moveModel.MoveRepaginateText(msPDF);
-                    string pageCountAsString = await analysisModel.PDFPageCount(msPDF);
+                    string pageCountAsString = await analysisModel.PDFPageCount(outputPdf);
                     int pageCount = int.Parse(pageCountAsString);
                     var pageArray = pagesToCopy.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     List<string> pagesAsString = new List<string>(pageArray);
@@ -377,8 +371,8 @@
                     {
                         pagesToRemove.Add(int.Parse(page));
                     }
-
-                    var numberedDoc = Pagination.RepaginateMovedPages(outputPdf, pageCount, pagesToRemove);
+                    var outputArray = outputPdf.ToArray();
+                    var numberedDoc = Pagination.RepaginateMovedPages(outputArray, pageCount, pagesToRemove);
                     var outputFileToUser = $"{pdfFile.Name.Replace(".pdf", "")} Moved on Text Repaginated.pdf";
                     outputText += Environment.NewLine + $"File Created: " + Environment.NewLine + outputFileToUser + Environment.NewLine;
                     downloadFile = numberedDoc;
