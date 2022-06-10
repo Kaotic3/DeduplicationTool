@@ -1,6 +1,7 @@
 ﻿using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
+using Microsoft.AspNetCore.Components.Forms;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,14 +17,15 @@ namespace DeduplicationTool.Models
         {
 
         }
-        public static string RemovePaginateText(string filename)
+        public async Task<string> RemovePaginateText(IBrowserFile pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
-            var path = System.IO.Path.GetDirectoryName(filename);
-            var title = System.IO.Path.GetFileName(filename);
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-
+            Stream stream = pdfFile.OpenReadStream();
+            var filename = new MemoryStream();
+            await stream.CopyToAsync(filename);
+            filename.Position = 0;
             PdfReader pdfReader = new PdfReader(filename);
             PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
@@ -31,9 +33,9 @@ namespace DeduplicationTool.Models
             List<int> pageOrder = new List<int>();
             StringBuilder textBuilder = new StringBuilder();
 
-            var newTitle = title.Replace(".pdf", "");
+            var newTitle = pdfFile.Name.Replace(".pdf", "");
             var outputFileToUser = $"{newTitle} Removed on Text.pdf";
-            var outputFile = System.IO.Path.Combine(path, outputFileToUser);
+            var outputFile = System.IO.Path.Combine("./", outputFileToUser);
             pagesRemoved.Append(outputFile + Environment.NewLine);
 
             using (var pdfIn = new PdfDocument(new PdfReader(filename)))
@@ -78,23 +80,25 @@ namespace DeduplicationTool.Models
             }
             return pagesRemoved.ToString();
         }
-        public static string RemovePaginateImages(string filename)
+        public async Task<string> RemovePaginateImages(IBrowserFile pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
-            var path = System.IO.Path.GetDirectoryName(filename);
-            var title = System.IO.Path.GetFileName(filename);
+            
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-
+            Stream stream = pdfFile.OpenReadStream();
+            var filename = new MemoryStream();
+            await stream.CopyToAsync(filename);
+            filename.Position = 0;
             PdfReader pdfReader = new PdfReader(filename);
             PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
             StringBuilder textBuilder = new StringBuilder();
             StringBuilder pagesRemoved = new StringBuilder();
 
-            var newTitle = title.Replace(".pdf", "");
+            var newTitle = pdfFile.Name.Replace(".pdf", "");
             var outputFileToUser = $"{newTitle} Removed on Images.pdf";
-            var outputFile = System.IO.Path.Combine(path, outputFileToUser);
+            var outputFile = System.IO.Path.Combine("./", outputFileToUser);
             pagesRemoved.Append(outputFile + Environment.NewLine);
             using (var pdfIn = new PdfDocument(new PdfReader(filename)))
             {
@@ -134,14 +138,15 @@ namespace DeduplicationTool.Models
             }
             return pagesRemoved.ToString();
         }
-        public static string RemoveRepaginateText(string filename)
+        public async Task<string> RemoveRepaginateText(IBrowserFile pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
-            var path = System.IO.Path.GetDirectoryName(filename);
-            var title = System.IO.Path.GetFileName(filename);
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-
+            Stream stream = pdfFile.OpenReadStream();
+            var filename = new MemoryStream();
+            await stream.CopyToAsync(filename);
+            filename.Position = 0;
             PdfReader pdfReader = new PdfReader(filename);
             PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
@@ -149,9 +154,9 @@ namespace DeduplicationTool.Models
             List<int> pageOrder = new List<int>();
             StringBuilder textBuilder = new StringBuilder();
 
-            var newTitle = title.Replace(".pdf", "");
+            var newTitle = pdfFile.Name.Replace(".pdf", "");
             var outputFileToUser = $"{newTitle} Removed on Text.pdf";
-            var outputFile = System.IO.Path.Combine(path, outputFileToUser);
+            var outputFile = System.IO.Path.Combine("./", outputFileToUser);
             pagesRemoved.Append(outputFile + Environment.NewLine);
 
             using (var pdfIn = new PdfDocument(new PdfReader(filename)))
@@ -196,23 +201,24 @@ namespace DeduplicationTool.Models
             }
             return pagesRemoved.ToString();
         }
-        public static string RemoveRepaginateImages(string filename)
+        public async Task<string> RemoveRepaginateImages(IBrowserFile pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
-            var path = System.IO.Path.GetDirectoryName(filename);
-            var title = System.IO.Path.GetFileName(filename);
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-
+            Stream stream = pdfFile.OpenReadStream();
+            var filename = new MemoryStream();
+            await stream.CopyToAsync(filename);
+            filename.Position = 0;
             PdfReader pdfReader = new PdfReader(filename);
             PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
             StringBuilder textBuilder = new StringBuilder();
             StringBuilder pagesRemoved = new StringBuilder();
 
-            var newTitle = title.Replace(".pdf", "");
+            var newTitle = pdfFile.Name.Replace(".pdf", "");
             var outputFileToUser = $"{newTitle} Removed on Images.pdf";
-            var outputFile = System.IO.Path.Combine(path, outputFileToUser);
+            var outputFile = System.IO.Path.Combine("./", outputFileToUser);
             pagesRemoved.Append(outputFile + Environment.NewLine);
             using (var pdfIn = new PdfDocument(new PdfReader(filename)))
             {

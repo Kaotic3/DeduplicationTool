@@ -8,6 +8,7 @@ using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using iText.Layout;
 using iText.Layout.Element;
 using iText.Layout.Properties;
+using Microsoft.AspNetCore.Components.Forms;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,26 +24,27 @@ namespace DeduplicationTool.Models
         {
 
         }
-        public static string ReplacePaginateText(string filename, string placeHolder)
+        public async Task<(byte[], string)> ReplacePaginateText(IBrowserFile pdfFile, string placeHolder)
         {
             SHA256 sha256 = SHA256.Create();
-            var path = System.IO.Path.GetDirectoryName(filename);
-            var title = System.IO.Path.GetFileName(filename);
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
 
-            PdfReader pdfReader = new PdfReader(filename);
-            PdfDocument pdfDoc = new PdfDocument(pdfReader);
+            Stream stream = pdfFile.OpenReadStream();
+            var filename = new MemoryStream();
+            await stream.CopyToAsync(filename);
+            filename.Position = 0;
+
             List<string> duplicatePages = new List<string>();
             StringBuilder textBuilder = new StringBuilder();
 
-            var newTitle = title.Replace(".pdf", "");
-            var outputFileToUser = $"{newTitle} Text Placeholder.pdf";
-            var outputFile = System.IO.Path.Combine(path, outputFileToUser);
+            var newTitle = pdfFile.Name.Replace(".pdf", "");
+            var outputFileToUser = $"{newTitle} Text Placeholder Paginated.pdf";
+            var outStream = new MemoryStream();
 
             using (var pdfIn = new PdfDocument(new PdfReader(filename)))
             {
-                using (var pdfOut = new PdfDocument(new PdfWriter(outputFile)))
+                using (var pdfOut = new PdfDocument(new PdfWriter(outStream)))
                 {
                     for (int page = 1; page <= pdfIn.GetNumberOfPages(); page++)
                     {
@@ -51,7 +53,7 @@ namespace DeduplicationTool.Models
                         {
 
                             var strategy = new SimpleTextExtractionStrategy();
-                            string pageContent = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(page), strategy);
+                            string pageContent = PdfTextExtractor.GetTextFromPage(pdfIn.GetPage(page), strategy);
                             pageContent = pageContent.Trim();
                             var pageToCompare = PDFAnalysis.TrimAllWithInplaceCharArray(pageContent);
 
@@ -103,33 +105,41 @@ namespace DeduplicationTool.Models
                         }
                         catch (Exception ex)
                         {
-                            return $"Unable to parse {filename} - Reason: {ex.Message}";
+
                         }
+                    }
+                    for (int page = 1; page <= pdfOut.GetNumberOfPages(); page++)
+                    {
+                        Document document = new Document(pdfOut);
+                        Rectangle rectangle = pdfOut.GetPage(page).GetPageSize();
+                        var width = rectangle.GetWidth();
+                        var middle = width / 2;
+
+                        document.ShowTextAligned(new Paragraph(String.Format("Page " + page + " of " + pdfOut.GetNumberOfPages())), middle, 7, page, TextAlignment.CENTER, VerticalAlignment.BOTTOM, 0);
                     }
                 }
             }
-            return outputFile;
+            return (outStream.ToArray(), outputFileToUser);
         }
-        public static string ReplacePaginateImages(string filename, string placeHolder)
+        public async Task<(byte[], string)> ReplacePaginateImages(IBrowserFile pdfFile, string placeHolder)
         {
             SHA256 sha256 = SHA256.Create();
-            var path = System.IO.Path.GetDirectoryName(filename);
-            var title = System.IO.Path.GetFileName(filename);
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-
-            PdfReader pdfReader = new PdfReader(filename);
-            PdfDocument pdfDoc = new PdfDocument(pdfReader);
+            Stream stream = pdfFile.OpenReadStream();
+            var filename = new MemoryStream();
+            await stream.CopyToAsync(filename);
+            filename.Position = 0;
             List<string> duplicatePages = new List<string>();
             StringBuilder textBuilder = new StringBuilder();
 
-            var newTitle = title.Replace(".pdf", "");
-            var outputFileToUser = $"{newTitle} Images Placeholder.pdf";
-            var outputFile = System.IO.Path.Combine(path, outputFileToUser);
+            var newTitle = pdfFile.Name.Replace(".pdf", "");
+            var outputFileToUser = $"{newTitle} Images Placeholder Paginated.pdf";
+            var outStream = new MemoryStream();
 
             using (var pdfIn = new PdfDocument(new PdfReader(filename)))
             {
-                using (var pdfOut = new PdfDocument(new PdfWriter(outputFile)))
+                using (var pdfOut = new PdfDocument(new PdfWriter(outStream)))
                 {
                     for (int page = 1; page <= pdfIn.GetNumberOfPages(); page++)
                     {
@@ -178,12 +188,21 @@ namespace DeduplicationTool.Models
                         }
                         catch (Exception ex)
                         {
-                            return $"Unable to parse {filename} - Reason: {ex.Message}";
+                            
                         }
+                    }
+                    for (int page = 1; page <= pdfOut.GetNumberOfPages(); page++)
+                    {
+                        Document document = new Document(pdfOut);
+                        Rectangle rectangle = pdfOut.GetPage(page).GetPageSize();
+                        var width = rectangle.GetWidth();
+                        var middle = width / 2;
+
+                        document.ShowTextAligned(new Paragraph(String.Format("Page " + page + " of " + pdfOut.GetNumberOfPages())), middle, 7, page, TextAlignment.CENTER, VerticalAlignment.BOTTOM, 0);
                     }
                 }
             }
-            return outputFile;
+            return (outStream.ToArray(), outputFileToUser);
         }
     }
 }

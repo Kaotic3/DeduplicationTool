@@ -8,6 +8,7 @@ using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using iText.Layout;
 using iText.Layout.Element;
 using iText.Layout.Properties;
+using Microsoft.AspNetCore.Components.Forms;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,23 +29,24 @@ namespace DeduplicationTool.Models
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public static string MovePaginateText(string filename)
+        public async Task<string> MovePaginateText(IBrowserFile pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
-            var path = System.IO.Path.GetDirectoryName(filename);
-            var title = System.IO.Path.GetFileName(filename);
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-
+            Stream stream = pdfFile.OpenReadStream();
+            var filename = new MemoryStream();
+            await stream.CopyToAsync(filename);
+            filename.Position = 0;
             PdfReader pdfReader = new PdfReader(filename);
             PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
             List<int> pageOrder = new List<int>();
             StringBuilder textBuilder = new StringBuilder();
 
-            var newTitle = title.Replace(".pdf", "");
+            var newTitle = pdfFile.Name.Replace(".pdf", "");
             var outputFileToUser = $"{newTitle} Moved on Text.pdf";
-            var outputFile = System.IO.Path.Combine(path, outputFileToUser);
+            var outputFile = System.IO.Path.Combine("./", outputFileToUser);
             int appendixPosition = 0;
             try
             {
@@ -138,23 +140,24 @@ namespace DeduplicationTool.Models
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public static string MoveRepaginateText(string filename)
+        public async Task<string> MoveRepaginateText(IBrowserFile pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
-            var path = System.IO.Path.GetDirectoryName(filename);
-            var title = System.IO.Path.GetFileName(filename);
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-
+            Stream stream = pdfFile.OpenReadStream();
+            var filename = new MemoryStream();
+            await stream.CopyToAsync(filename);
+            filename.Position = 0;
             PdfReader pdfReader = new PdfReader(filename);
             PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
             List<int> pageOrder = new List<int>();
             StringBuilder textBuilder = new StringBuilder();
 
-            var newTitle = title.Replace(".pdf", "");
+            var newTitle = pdfFile.Name.Replace(".pdf", "");
             var outputFileToUser = $"{newTitle} Moved on Text.pdf";
-            var outputFile = System.IO.Path.Combine(path, outputFileToUser);
+            var outputFile = System.IO.Path.Combine("./", outputFileToUser);
             int appendixPosition = 0;
             try
             {
@@ -248,14 +251,15 @@ namespace DeduplicationTool.Models
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public static string MovePaginateImages(string filename)
+        public async Task<string> MovePaginateImages(IBrowserFile pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
-            var path = System.IO.Path.GetDirectoryName(filename);
-            var title = System.IO.Path.GetFileName(filename);
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-
+            Stream stream = pdfFile.OpenReadStream();
+            var filename = new MemoryStream();
+            await stream.CopyToAsync(filename);
+            filename.Position = 0;
             PdfReader pdfReader = new PdfReader(filename);
             PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
@@ -263,9 +267,9 @@ namespace DeduplicationTool.Models
             List<int> pageOrder = new List<int>();
 
 
-            var newTitle = title.Replace(".pdf", "");
+            var newTitle = pdfFile.Name.Replace(".pdf", "");
             var outputFileToUser = $"{newTitle} Moved on Images.pdf";
-            var outputFile = System.IO.Path.Combine(path, outputFileToUser);
+            var outputFile = System.IO.Path.Combine("./", outputFileToUser);
             try
             {
                 using (var pdfIn = new PdfDocument(new PdfReader(filename)))
@@ -357,14 +361,15 @@ namespace DeduplicationTool.Models
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public static string MoveRepaginateImages(string filename)
+        public async Task<string> MoveRepaginateImages(IBrowserFile pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
-            var path = System.IO.Path.GetDirectoryName(filename);
-            var title = System.IO.Path.GetFileName(filename);
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-
+            Stream stream = pdfFile.OpenReadStream();
+            var filename = new MemoryStream();
+            await stream.CopyToAsync(filename);
+            filename.Position = 0;
             PdfReader pdfReader = new PdfReader(filename);
             PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
@@ -372,9 +377,9 @@ namespace DeduplicationTool.Models
             List<int> pageOrder = new List<int>();
 
 
-            var newTitle = title.Replace(".pdf", "");
+            var newTitle = pdfFile.Name.Replace(".pdf", "");
             var outputFileToUser = $"{newTitle} Moved on Images.pdf";
-            var outputFile = System.IO.Path.Combine(path, outputFileToUser);
+            var outputFile = System.IO.Path.Combine("./", outputFileToUser);
             try
             {
                 using (var pdfIn = new PdfDocument(new PdfReader(filename)))
