@@ -65,7 +65,7 @@
     public string? statusOut;
     public bool containsImages { get; set; }
     public string[] pdfUniqueArray;
-    private int MAXALLOWEDSIZE = 15000000;
+    private int MAXALLOWEDSIZE = 20000000;
 
     private async Task OnFileSelection(InputFileChangeEventArgs e)
     {
@@ -78,7 +78,7 @@
         IBrowserFile pdfFile = e.File;
 
         outputText += $"Processing {pdfFile.Name}" + Environment.NewLine + Environment.NewLine;
-
+        
         // Creates a Memory Stream of the File
         Stream stream = pdfFile.OpenReadStream(MAXALLOWEDSIZE);
         var msPDF = new MemoryStream();
@@ -89,18 +89,18 @@
 
         outputText += $"The file \"{pdfFile.Name}\" contains {countResult} page(s)" + Environment.NewLine + Environment.NewLine;
         StateHasChanged();
-
+        msPDF.Position = 0;
         if (containsImages == false)
         {
-            var uniquePagesResult = await analysisModel.PDFUniquePagesSha(pdfFile);
+            var uniquePagesResult = await analysisModel.PDFUniquePagesSha(msPDF);
             pdfUniqueArray = uniquePagesResult.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-            outputText = "This is a text comparison" + Environment.NewLine;
+            outputText += $"Comparing pages based on text alone." + Environment.NewLine;
         }
         else
         {
-            var uniqueImagesResult = await analysisModel.PDFUniquePagesShaImages(pdfFile);
+            var uniqueImagesResult = await analysisModel.PDFUniquePagesShaImages(msPDF);
             pdfUniqueArray = uniqueImagesResult.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-            outputText = "This is an image comparison" + Environment.NewLine;
+            outputText += $"Comparing pages using text and images." + Environment.NewLine;
         }
         List<string> pages = new List<string>(pdfUniqueArray);
         List<string> matched = new List<string>();

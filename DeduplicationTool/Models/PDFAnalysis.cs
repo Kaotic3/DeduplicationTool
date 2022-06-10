@@ -34,13 +34,9 @@ namespace DeduplicationTool.Models
         {
             return string.Empty;
         }
-        public async Task<string> PDFUniquePagesHash(IBrowserFile pdfFile)
+        public async Task<string> PDFUniquePagesHash(MemoryStream pdfFile)
         {
-            Stream stream = pdfFile.OpenReadStream(MAXALLOWEDSIZE);
-            var filename = new MemoryStream();
-            await stream.CopyToAsync(filename);
-            filename.Position = 0;
-            PdfReader pdfReader = new PdfReader(filename);
+            PdfReader pdfReader = new PdfReader(pdfFile);
             PdfDocument pdfDoc = new PdfDocument(pdfReader);
 
             StringBuilder sb = new StringBuilder();
@@ -57,19 +53,16 @@ namespace DeduplicationTool.Models
                 }
                 catch (Exception ex)
                 {
-                    return $"Unable to parse {filename} - Reason: {ex}";
+                    
                 }
             }
             return sb.ToString();
         }
-        public async Task<string> PDFUniquePagesShaImages(IBrowserFile pdfFile)
+        public async Task<string> PDFUniquePagesShaImages(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
-            Stream stream = pdfFile.OpenReadStream(MAXALLOWEDSIZE);
-            var filename = new MemoryStream();
-            await stream.CopyToAsync(filename);
-            filename.Position = 0;
-            PdfReader pdfReader = new PdfReader(filename);
+            
+            PdfReader pdfReader = new PdfReader(pdfFile);
 
             PdfDocument pdfDoc = new PdfDocument(pdfReader);
             StringBuilder textBuilder = new StringBuilder();
@@ -102,20 +95,15 @@ namespace DeduplicationTool.Models
                 }
                 catch (Exception ex)
                 {
-                    return $"Unable to parse {filename} - Reason: {ex}";
+
                 }
             }
             return sb.ToString();
         }
-        public async Task<string> PDFUniquePagesSha(IBrowserFile pdfFile)
+        public async Task<string> PDFUniquePagesSha(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
-            Stream stream = pdfFile.OpenReadStream();
-            var filename = new MemoryStream();
-            await stream.CopyToAsync(filename);
-            
-            filename.Position = 0;
-            PdfReader pdfReader = new PdfReader(filename);
+            PdfReader pdfReader = new PdfReader(pdfFile);
             PdfDocument pdfDoc = new PdfDocument(pdfReader);
 
             StringBuilder sb = new StringBuilder();
@@ -141,7 +129,7 @@ namespace DeduplicationTool.Models
                 }
                 catch (Exception ex)
                 {
-                    return $"Unable to parse {filename} - Reason: {ex}";
+                    
                 }
             }
             return sb.ToString();
