@@ -21,7 +21,7 @@ namespace DeduplicationTool.Models
         {
 
         }
-        public async Task<MemoryStream> RemovePaginateText(MemoryStream pdfFile)
+        public async Task<byte[]> RemovePaginateText(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
             HashSet<string> pages = new HashSet<string>();
@@ -70,18 +70,26 @@ namespace DeduplicationTool.Models
 
                         }
                     }
+                    Document document = new Document(pdfOut);
+
+                    for (int page = 1; page <= pdfOut.GetNumberOfPages(); page++)
+                    {
+                        Rectangle rectangle = pdfOut.GetPage(page).GetPageSize();
+                        var width = rectangle.GetWidth();
+                        var middle = width / 2;
+
+                        document.ShowTextAligned(new Paragraph(String.Format("Page " + page + " of " + pdfOut.GetNumberOfPages())), middle, 7, page, TextAlignment.CENTER, VerticalAlignment.BOTTOM, 0);
+                    }
                 }
             }
-            return outStream;
+            return outStream.ToArray();
         }
-        public async Task<MemoryStream> RemovePaginateImages(MemoryStream pdfFile)
+        public async Task<byte[]> RemovePaginateImages(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
             
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-            PdfReader pdfReader = new PdfReader(pdfFile);
-            PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
             StringBuilder textBuilder = new StringBuilder();
             StringBuilder pagesRemoved = new StringBuilder();
@@ -121,11 +129,21 @@ namespace DeduplicationTool.Models
                             
                         }
                     }
+                    Document document = new Document(pdfOut);
+
+                    for (int page = 1; page <= pdfOut.GetNumberOfPages(); page++)
+                    {
+                        Rectangle rectangle = pdfOut.GetPage(page).GetPageSize();
+                        var width = rectangle.GetWidth();
+                        var middle = width / 2;
+
+                        document.ShowTextAligned(new Paragraph(String.Format("Page " + page + " of " + pdfOut.GetNumberOfPages())), middle, 7, page, TextAlignment.CENTER, VerticalAlignment.BOTTOM, 0);
+                    }
                 }
             }
-            return outStream;
+            return outStream.ToArray();
         }
-        public async Task<(MemoryStream, string, int)> RemoveRepaginateText(MemoryStream pdfFile)
+        public async Task<byte[]> RemoveRepaginateText(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
             PDFAnalysis analysisModel = new PDFAnalysis();
@@ -201,15 +219,143 @@ namespace DeduplicationTool.Models
                             k++;
                         }
                     }
-                    return (outStream, pagesRemoved.ToString(), pageCount);
+                    return outStream.ToArray();
                 }
             }
             
         }
-        public async Task<(MemoryStream, string)> RemoveRepaginateImages(MemoryStream pdfFile)
+        public async Task<byte[]> RemoveRepaginateImages(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
             HashSet<string> pages = new HashSet<string>();
+            List<string> duplicatePages = new List<string>();
+            StringBuilder textBuilder = new StringBuilder();
+            StringBuilder pagesRemoved = new StringBuilder();
+            var outStream = new MemoryStream();
+            int pageCount;
+
+            using (var pdfIn = new PdfDocument(new PdfReader(pdfFile)))
+            {
+                using (var pdfOut = new PdfDocument(new PdfWriter(outStream)))
+                {
+                    Document document = new Document(pdfOut);
+                    for (int page = 1; page <= pdfIn.GetNumberOfPages(); page++)
+                    {
+                        try
+                        {
+                            textBuilder.Clear();
+                            var pageToCheck = pdfIn.GetPage(page);
+                            var pageBytes = pageToCheck.GetContentBytes();
+                            var imageHash = sha256.ComputeHash(pageBytes);
+
+                            for (int i = 0; i < imageHash.Length; i++)
+                            {
+                                textBuilder.Append(imageHash[i].ToString("x2"));
+                            }
+                            duplicatePages.Add(textBuilder.ToString());
+                            if (!pages.Contains(textBuilder.ToString()))
+                            {
+                                pdfIn.CopyPagesTo(page, page, pdfOut, page + 1);
+                                pages.Add(textBuilder.ToString());
+                                pagesRemoved.Append(page + Environment.NewLine);
+                            }
+                            else
+                            {
+
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            
+                        }
+                        pageCount = pdfOut.GetNumberOfPages();
+                        var pageArray = pagesRemoved.ToString().Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                        List<string> pagesAsString = new List<string>(pageArray);
+                        List<int> pagesToRemove = new List<int>();
+                        foreach (var newPage in pagesAsString)
+                        {
+                            pagesToRemove.Add(int.Parse(newPage));
+                        }
+                        int k = 1;
+                        foreach (var intPage in pagesToRemove)
+                        {
+                            if (intPage == 99999999)
+                            {
+                                k++;
+                            }
+                            else
+                            {
+                                Rectangle rectangle = pdfOut.GetPage(k).GetPageSize();
+                                var width = rectangle.GetWidth();
+                                var middle = width / 2;
+                                document.ShowTextAligned(new Paragraph(String.Format("Page " + intPage + " of " + pageCount)), middle, 7, k, TextAlignment.CENTER, VerticalAlignment.BOTTOM, 0);
+                                k++;
+                            }
+                        }
+                    }
+                }
+            }
+            return outStream.ToArray();
+        }
+        public async Task<byte[]> RemoveOnText(MemoryStream pdfFile)
+        {
+            SHA256 sha256 = SHA256.Create();
+            HashSet<string> pages = new HashSet<string>();
+            List<int> pagesToCopy = new List<int>();
+            List<string> duplicatePages = new List<string>();
+            StringBuilder pagesRemoved = new StringBuilder();
+            List<int> pageOrder = new List<int>();
+            StringBuilder textBuilder = new StringBuilder();
+            var outStream = new MemoryStream();
+
+            using (var pdfIn = new PdfDocument(new PdfReader(pdfFile)))
+            {
+                using (var pdfOut = new PdfDocument(new PdfWriter(outStream)))
+                {
+                    for (int page = 1; page <= pdfIn.GetNumberOfPages(); page++)
+                    {
+                        textBuilder.Clear();
+                        try
+                        {
+                            var strategy = new SimpleTextExtractionStrategy();
+                            string pageContent = PdfTextExtractor.GetTextFromPage(pdfIn.GetPage(page), strategy);
+                            pageContent = pageContent.Trim();
+                            var pageToCompare = PDFAnalysis.TrimAllWithInplaceCharArray(pageContent);
+
+                            byte[] bytes = Encoding.ASCII.GetBytes(pageToCompare);
+                            var textHash = sha256.ComputeHash(bytes);
+                            for (int i = 0; i < textHash.Length; i++)
+                            {
+                                textBuilder.Append(textHash[i].ToString("x2"));
+                            }
+
+                            duplicatePages.Add(textBuilder.ToString());
+                            if (!pages.Contains(textBuilder.ToString()))
+                            {
+                                pdfIn.CopyPagesTo(page, page, pdfOut, page + 1);
+                                pages.Add(textBuilder.ToString());
+                                pagesRemoved.Append(page + Environment.NewLine);
+                            }
+                            else
+                            {
+
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
+                    }
+                }
+            }
+            return outStream.ToArray();
+        }
+        public async Task<byte[]> RemoveOnImages(MemoryStream pdfFile)
+        {
+            SHA256 sha256 = SHA256.Create();
+
+            HashSet<string> pages = new HashSet<string>();
+            List<int> pagesToCopy = new List<int>();
             List<string> duplicatePages = new List<string>();
             StringBuilder textBuilder = new StringBuilder();
             StringBuilder pagesRemoved = new StringBuilder();
@@ -246,12 +392,12 @@ namespace DeduplicationTool.Models
                         }
                         catch (Exception ex)
                         {
-                            
+
                         }
                     }
                 }
             }
-            return (outStream, pagesRemoved.ToString());
+            return outStream.ToArray();
         }
     }
 }

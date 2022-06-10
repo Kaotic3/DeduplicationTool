@@ -29,7 +29,7 @@ namespace DeduplicationTool.Models
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public async Task<MemoryStream> MovePaginateText(MemoryStream pdfFile)
+        public async Task<byte[]> MovePaginateText(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
             HashSet<string> pages = new HashSet<string>();
@@ -111,6 +111,16 @@ namespace DeduplicationTool.Models
                                 }
                             }
                         }
+                        Document document = new Document(pdfOut);
+
+                        for (int page = 1; page <= pdfOut.GetNumberOfPages(); page++)
+                        {
+                            Rectangle rectangle2 = pdfOut.GetPage(page).GetPageSize();
+                            var width2 = rectangle2.GetWidth();
+                            var middle2 = width2 / 2;
+
+                            document.ShowTextAligned(new Paragraph(String.Format("Page " + page + " of " + pdfOut.GetNumberOfPages())), middle2, 7, page, TextAlignment.CENTER, VerticalAlignment.BOTTOM, 0);
+                        }
                     }
                 }
             }
@@ -119,14 +129,14 @@ namespace DeduplicationTool.Models
                 
             }
             
-            return outstream;
+            return outstream.ToArray();
         }
         /// <summary>
         /// Moves duplicate pages based on the text on the page to the end of the document. Inserts an appendix page. Keeps a record of moved pages for repagination.
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public async Task<(MemoryStream, string)> MoveRepaginateText(MemoryStream pdfFile)
+        public async Task<byte[]> MoveRepaginateText(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
             HashSet<string> pages = new HashSet<string>();
@@ -209,6 +219,25 @@ namespace DeduplicationTool.Models
                                 }
                             }
                         }
+                        int pageCount = pdfOut.GetNumberOfPages();
+                        List<int> pagesToRemove = new List<int>();
+                        Document document = new Document(pdfOut);
+                        int k = 1;
+                        foreach (var pageInOrder in pageOrder)
+                        {
+                            if (pageInOrder == 99999999)
+                            {
+                                k++;
+                            }
+                            else
+                            {
+                                Rectangle rectangle2 = pdfOut.GetPage(k).GetPageSize();
+                                var width2 = rectangle2.GetWidth();
+                                var middle2 = width2 / 2;
+                                document.ShowTextAligned(new Paragraph(String.Format("Page " + pageInOrder + " of " + pageCount)), middle2, 7, k, TextAlignment.CENTER, VerticalAlignment.BOTTOM, 0);
+                                k++;
+                            }
+                        }
                     }
                 }
             }
@@ -216,19 +245,14 @@ namespace DeduplicationTool.Models
             {
                 
             }
-            StringBuilder toSend = new StringBuilder();
-            foreach (var page in pageOrder)
-            {
-                toSend.Append(page.ToString() + Environment.NewLine);
-            }
-            return (outstream, toSend.ToString());
+            return outstream.ToArray();
         }
         /// <summary>
         /// Moves duplicate pages based on text on the page to the end of the document. Inserts an appendix page. Different process to repagination.
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public async Task<MemoryStream> MovePaginateImages(MemoryStream pdfFile)
+        public async Task<byte[]> MovePaginateImages(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
             HashSet<string> pages = new HashSet<string>();
@@ -308,6 +332,16 @@ namespace DeduplicationTool.Models
                             }
 
                         }
+                        Document document = new Document(pdfOut);
+
+                        for (int page = 1; page <= pdfOut.GetNumberOfPages(); page++)
+                        {
+                            Rectangle rectangle2 = pdfOut.GetPage(page).GetPageSize();
+                            var width2 = rectangle2.GetWidth();
+                            var middle2 = width2 / 2;
+
+                            document.ShowTextAligned(new Paragraph(String.Format("Page " + page + " of " + pdfOut.GetNumberOfPages())), middle2, 7, page, TextAlignment.CENTER, VerticalAlignment.BOTTOM, 0);
+                        }
                     }
                 }
             }
@@ -315,13 +349,7 @@ namespace DeduplicationTool.Models
             {
                 
             }
-            StringBuilder toSend = new StringBuilder();
-            foreach (var page in pageOrder)
-            {
-                toSend.Append(page.ToString() + Environment.NewLine);
-            }
-
-            return outstream;
+            return outstream.ToArray();
         }
         /// <summary>
         /// Moves duplicate pages based on images and text on the page to the end of the document. Inserts an appendix page. Keeps a record of moved pages for repagination.

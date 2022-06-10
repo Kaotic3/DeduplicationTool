@@ -94,11 +94,13 @@
         {
             var uniquePagesResult = await analysisModel.PDFUniquePagesSha(pdfFile);
             pdfUniqueArray = uniquePagesResult.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            outputText = "This is a text comparison" + Environment.NewLine;
         }
         else
         {
             var uniqueImagesResult = await analysisModel.PDFUniquePagesShaImages(pdfFile);
             pdfUniqueArray = uniqueImagesResult.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            outputText = "This is an image comparison" + Environment.NewLine;
         }
         List<string> pages = new List<string>(pdfUniqueArray);
         List<string> matched = new List<string>();
