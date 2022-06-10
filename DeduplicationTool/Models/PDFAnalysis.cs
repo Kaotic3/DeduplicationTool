@@ -17,18 +17,15 @@ namespace DeduplicationTool.Models
     public class PDFAnalysis
     {
         private SHA256 Sha256 = SHA256.Create();
+        private int MAXALLOWEDSIZE = 15000000;
         public PDFAnalysis()
         {
 
         }
-        public async Task<string> PDFPageCount(IBrowserFile pdfFile)
+        public async Task<string> PDFPageCount(MemoryStream pdfFile)
         {
             int pageCount;
-            Stream stream = pdfFile.OpenReadStream();
-            var copy = new MemoryStream();
-            await stream.CopyToAsync(copy);
-            copy.Position = 0;
-            PdfDocument pdfDoc = new PdfDocument(new PdfReader(copy));
+            PdfDocument pdfDoc = new PdfDocument(new PdfReader(pdfFile));
             pageCount = pdfDoc.GetNumberOfPages();
 
             return pageCount.ToString();
@@ -39,7 +36,7 @@ namespace DeduplicationTool.Models
         }
         public async Task<string> PDFUniquePagesHash(IBrowserFile pdfFile)
         {
-            Stream stream = pdfFile.OpenReadStream();
+            Stream stream = pdfFile.OpenReadStream(MAXALLOWEDSIZE);
             var filename = new MemoryStream();
             await stream.CopyToAsync(filename);
             filename.Position = 0;
@@ -68,7 +65,7 @@ namespace DeduplicationTool.Models
         public async Task<string> PDFUniquePagesShaImages(IBrowserFile pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
-            Stream stream = pdfFile.OpenReadStream();
+            Stream stream = pdfFile.OpenReadStream(MAXALLOWEDSIZE);
             var filename = new MemoryStream();
             await stream.CopyToAsync(filename);
             filename.Position = 0;
@@ -93,18 +90,13 @@ namespace DeduplicationTool.Models
                     {
                         textBuilder.Append(hashValue[i].ToString("x2"));
                     }
-                    PdfReader pdfReader2 = new PdfReader(filename);
-                    using (var pdfDoc2 = new PdfDocument(pdfReader2))
+                    var pageToCheck = pdfDoc.GetPage(page);
+                    var pageBytes = pageToCheck.GetContentBytes();
+
+                    var imageHash = sha256.ComputeHash(pageBytes);
+                    for (int k = 0; k < imageHash.Length; k++)
                     {
-                        var pageToCheck = pdfDoc2.GetPage(page);
-                        var pageBytes = pageToCheck.GetContentBytes();
-
-                        var imageHash = sha256.ComputeHash(pageBytes);
-                        for (int k = 0; k < imageHash.Length; k++)
-                        {
-                            imageBuilder.Append(imageHash[k].ToString("x2"));
-                        }
-
+                        imageBuilder.Append(imageHash[k].ToString("x2"));
                     }
                     sb.Append(textBuilder.ToString() + imageBuilder.ToString() + Environment.NewLine);
                 }
@@ -115,10 +107,14 @@ namespace DeduplicationTool.Models
             }
             return sb.ToString();
         }
-        public static string PDFUniquePagesSha(string filename)
+        public async Task<string> PDFUniquePagesSha(IBrowserFile pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
-            var path = System.IO.Path.GetDirectoryName(filename);
+            Stream stream = pdfFile.OpenReadStream();
+            var filename = new MemoryStream();
+            await stream.CopyToAsync(filename);
+            
+            filename.Position = 0;
             PdfReader pdfReader = new PdfReader(filename);
             PdfDocument pdfDoc = new PdfDocument(pdfReader);
 
@@ -215,7 +211,6 @@ namespace DeduplicationTool.Models
         }
         public static string TrimAllWithInplaceCharArray(string str)
         {
-
             var len = str.Length;
             var src = str.ToCharArray();
             int dstIdx = 0;

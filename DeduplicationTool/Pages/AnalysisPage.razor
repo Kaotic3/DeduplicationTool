@@ -65,30 +65,39 @@
     public string? statusOut;
     public bool containsImages { get; set; }
     public string[] pdfUniqueArray;
+    private int MAXALLOWEDSIZE = 15000000;
 
     private async Task OnFileSelection(InputFileChangeEventArgs e)
     {
+        PDFAnalysis analysisModel = new PDFAnalysis();
+        // Clear the text boxes
         Reset();
-        HashSet<string> results = new HashSet<string>();
         StringBuilder sb = new StringBuilder();
-        PDFAnalysis pdfA = new PDFAnalysis();
         int pageCount = 0;
+        // Takes user selected file
         IBrowserFile pdfFile = e.File;
+
         outputText += $"Processing {pdfFile.Name}" + Environment.NewLine + Environment.NewLine;
 
-        var countResult = await pdfA.PDFPageCount(pdfFile);
+        // Creates a Memory Stream of the File
+        Stream stream = pdfFile.OpenReadStream(MAXALLOWEDSIZE);
+        var msPDF = new MemoryStream();
+        await stream.CopyToAsync(msPDF);
+        msPDF.Position = 0;
+
+        var countResult = await analysisModel.PDFPageCount(msPDF);
 
         outputText += $"The file \"{pdfFile.Name}\" contains {countResult} page(s)" + Environment.NewLine + Environment.NewLine;
         StateHasChanged();
 
-        if (containsImages == false)
+        if (containsImages == true)
         {
-            var uniquePagesResult = await pdfA.PDFUniquePagesHash(pdfFile);
+            var uniquePagesResult = await analysisModel.PDFUniquePagesSha(pdfFile);
             pdfUniqueArray = uniquePagesResult.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
         }
         else
         {
-            var uniqueImagesResult = await pdfA.PDFUniquePagesShaImages(pdfFile);
+            var uniqueImagesResult = await analysisModel.PDFUniquePagesShaImages(pdfFile);
             pdfUniqueArray = uniqueImagesResult.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
         }
         List<string> pages = new List<string>(pdfUniqueArray);

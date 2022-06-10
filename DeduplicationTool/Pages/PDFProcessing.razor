@@ -104,6 +104,7 @@
     PaginationProcess newChoice = PaginationProcess.None;
     public byte[]? downloadFile;
     public string? fileName;
+    private int MAXALLOWEDSIZE = 15000000;
 
     protected override void OnInitialized()
     {
@@ -116,12 +117,17 @@
     }
     private async Task OnFileSelection(InputFileChangeEventArgs e)
     {
-        ReplacePDFPages rpdfp = new ReplacePDFPages();
-        RemovePDFPages rempdfp = new RemovePDFPages();
-        Pagination pagpdf = new Pagination();
-        PDFAnalysis pdfa = new PDFAnalysis();
-        MovePDFPages movpdf = new MovePDFPages();
+        ReplacePDFPages replaceModel = new ReplacePDFPages();
+        RemovePDFPages removeModel = new RemovePDFPages();
+        Pagination paginationModel = new Pagination();
+        PDFAnalysis analysisModel = new PDFAnalysis();
+        MovePDFPages moveModel = new MovePDFPages();
         IBrowserFile pdfFile = e.File;
+        Stream stream = pdfFile.OpenReadStream(MAXALLOWEDSIZE);
+        var msPDF = new MemoryStream();
+        await stream.CopyToAsync(msPDF);
+        msPDF.Position = 0;
+
         if (currentChoice == Processes.Replace)
         {
             // Since the numbering doesn't change it changes Repaginate to Paginate.
@@ -138,7 +144,7 @@
                     outputText = "Replace Pages using images." + Environment.NewLine + "Paginate Document after replacement" + Environment.NewLine + Environment.NewLine;
                     outputText += Environment.NewLine + $"Processing file: " + pdfFile.Name + Environment.NewLine + Environment.NewLine;
 
-                    var (outputPdf, DeDupetitle) = await rpdfp.ReplacePaginateImages(pdfFile, placeHolder);
+                    var (outputPdf, DeDupetitle) = await replaceModel.ReplacePaginateImages(pdfFile, placeHolder);
                     outputText += Environment.NewLine + $"File Created: " + Environment.NewLine + DeDupetitle + Environment.NewLine + Environment.NewLine;
                     downloadFile = outputPdf;
                     fileName = DeDupetitle;
@@ -150,7 +156,7 @@
                     outputText = "Replace Pages using text" + Environment.NewLine + "Paginate Document after replacement";
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine;
 
-                    var (outputPdf, outputfileName) = await rpdfp.ReplacePaginateText(pdfFile, placeHolder);
+                    var (outputPdf, outputfileName) = await replaceModel.ReplacePaginateText(pdfFile, placeHolder);
                     outputText += $"Replaced Places: " + Environment.NewLine;
                     outputText += $"File Created: " + Environment.NewLine + outputfileName + Environment.NewLine;
                     //string numberedDoc = Pagination.PaginateDocument(outputPdf);
@@ -165,7 +171,7 @@
                 {
                     outputText = "Replace Pages using images." + Environment.NewLine + Environment.NewLine;
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine + Environment.NewLine;
-                    var outputPdf = await rpdfp.ReplacePaginateImages(pdfFile, placeHolder);
+                    var outputPdf = await replaceModel.ReplacePaginateImages(pdfFile, placeHolder);
                     //var DeDupetitle = System.IO.Path.GetFileName(outputPdf);
                     outputText += Environment.NewLine + $"File Created: " + Environment.NewLine + pdfFile.Name + Environment.NewLine + Environment.NewLine;
                 }
@@ -173,7 +179,7 @@
                 {
                     outputText = "Replace Pages using text" + Environment.NewLine + Environment.NewLine;
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine + Environment.NewLine;
-                    var (outputPdf, outputFileName) =  await rpdfp.ReplacePaginateText(pdfFile, placeHolder);
+                    var (outputPdf, outputFileName) =  await replaceModel.ReplacePaginateText(pdfFile, placeHolder);
                     outputText += Environment.NewLine + $"File Created: " + Environment.NewLine + outputFileName;
                 }
             }
@@ -188,7 +194,7 @@
                     outputText = "Remove Pages using images." + Environment.NewLine + "Paginate Document" + Environment.NewLine + Environment.NewLine;
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine + Environment.NewLine;
 
-                    string outputPdf = await rempdfp.RemovePaginateImages(pdfFile);
+                    string outputPdf = await removeModel.RemovePaginateImages(pdfFile);
                     var pageArray = outputPdf.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     var DeDupetitle = System.IO.Path.GetFileName(pageArray[0]);
                     var filePathToPass = pageArray[0];
@@ -202,7 +208,7 @@
                     outputText = "Remove Pages using text." + Environment.NewLine + "Paginate Document" + Environment.NewLine + Environment.NewLine;
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine + Environment.NewLine;
 
-                    string outputPdf = await rempdfp.RemovePaginateText(pdfFile);
+                    string outputPdf = await removeModel.RemovePaginateText(pdfFile);
                     var pageArray = outputPdf.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     var DeDupetitle = System.IO.Path.GetFileName(pageArray[0]);
                     var filePathToPass = pageArray[0];
@@ -219,8 +225,8 @@
                     outputText = "Remove pages using images." + Environment.NewLine + "Keep original pagination." + Environment.NewLine + Environment.NewLine;
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine + Environment.NewLine;
 
-                    string outputPdf = await rempdfp.RemoveRepaginateImages(pdfFile);
-                    string pageCountAsString = await pdfa.PDFPageCount(pdfFile);
+                    string outputPdf = await removeModel.RemoveRepaginateImages(pdfFile);
+                    string pageCountAsString = await analysisModel.PDFPageCount(msPDF);
                     int pageCount = int.Parse(pageCountAsString);
                     var pageArray = outputPdf.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     var DeDupetitle = System.IO.Path.GetFileName(pageArray[0]);
@@ -243,8 +249,8 @@
                     outputText = "Remove Pages using text." + Environment.NewLine + "Keep original pagination." + Environment.NewLine + Environment.NewLine;
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine + Environment.NewLine;
 
-                    string outputPdf = await rempdfp.RemoveRepaginateText(pdfFile);
-                    string pageCountAsString = await pdfa.PDFPageCount(pdfFile);
+                    string outputPdf = await removeModel.RemoveRepaginateText(pdfFile);
+                    string pageCountAsString = await analysisModel.PDFPageCount(msPDF);
                     int pageCount = int.Parse(pageCountAsString);
                     var pageArray = outputPdf.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     var DeDupetitle = System.IO.Path.GetFileName(pageArray[0]);
@@ -270,7 +276,7 @@
                     outputText = "Remove Pages using images." + Environment.NewLine + Environment.NewLine;
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine + Environment.NewLine;
 
-                    string outputPdf = await rempdfp.RemovePaginateImages(pdfFile);
+                    string outputPdf = await removeModel.RemovePaginateImages(pdfFile);
                     var pageArray = outputPdf.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     var DeDupetitle = System.IO.Path.GetFileName(pageArray[0]);
                     outputText += Environment.NewLine + $"File Created: " + Environment.NewLine + DeDupetitle + Environment.NewLine + Environment.NewLine;
@@ -280,7 +286,7 @@
                     outputText = "Remove Pages using text." + Environment.NewLine + Environment.NewLine;
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine + Environment.NewLine;
 
-                    string outputPdf = await rempdfp.RemovePaginateText(pdfFile);
+                    string outputPdf = await removeModel.RemovePaginateText(pdfFile);
                     var pageArray = outputPdf.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     var DeDupetitle = System.IO.Path.GetFileName(pageArray[0]);
                     outputText += Environment.NewLine + $"File Created: " + Environment.NewLine + DeDupetitle + Environment.NewLine + Environment.NewLine;
@@ -299,7 +305,7 @@
 
                     // WE ARE HERE SO FAR!!!
 
-                    string outputPdf = await movpdf.MovePaginateImages(pdfFile);
+                    string outputPdf = await moveModel.MovePaginateImages(pdfFile);
                     var pageArray = outputPdf.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     var DeDupetitle = System.IO.Path.GetFileName(pageArray[0]);
                     var filePathToPass = pageArray[0];
@@ -313,7 +319,7 @@
                     outputText = "Move Pages using text." + Environment.NewLine + "Paginate document." + Environment.NewLine + Environment.NewLine;
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine + Environment.NewLine;
 
-                    string outputPdf = await movpdf.MovePaginateText(pdfFile);
+                    string outputPdf = await moveModel.MovePaginateText(pdfFile);
                     var pageArray = outputPdf.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     var DeDupetitle = System.IO.Path.GetFileName(pageArray[0]);
                     outputText += Environment.NewLine + $"File Created: " + Environment.NewLine + DeDupetitle + Environment.NewLine + Environment.NewLine;
@@ -330,8 +336,8 @@
                     outputText = "Move Pages using images." + Environment.NewLine + Environment.NewLine;
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine + Environment.NewLine;
 
-                    string outputPdf = await movpdf.MoveRepaginateImages(pdfFile);
-                    string pageCountAsString = await pdfa.PDFPageCount(pdfFile);
+                    string outputPdf = await moveModel.MoveRepaginateImages(pdfFile);
+                    string pageCountAsString = await analysisModel.PDFPageCount(msPDF);
                     int pageCount = int.Parse(pageCountAsString);
                     var pageArray = outputPdf.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     var DeDupetitle = System.IO.Path.GetFileName(pageArray[0]);
@@ -360,8 +366,8 @@
                     outputText = "Move Pages using text." + Environment.NewLine + Environment.NewLine;
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine + Environment.NewLine;
 
-                    string outputPdf = await movpdf.MoveRepaginateText(pdfFile);
-                    string pageCountAsString = await pdfa.PDFPageCount(pdfFile);
+                    string outputPdf = await moveModel.MoveRepaginateText(pdfFile);
+                    string pageCountAsString = await analysisModel.PDFPageCount(msPDF);
                     int pageCount = int.Parse(pageCountAsString);
                     var pageArray = outputPdf.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     var DeDupetitle = System.IO.Path.GetFileName(pageArray[0]);
@@ -387,7 +393,7 @@
                     outputText = "Move Pages using text and images." + Environment.NewLine + "No pagination." + Environment.NewLine + Environment.NewLine;
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine + Environment.NewLine;
 
-                    string outputPdf = await movpdf.MovePaginateImages(pdfFile);
+                    string outputPdf = await moveModel.MovePaginateImages(pdfFile);
                     var pageArray = outputPdf.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     var DeDupetitle = System.IO.Path.GetFileName(pageArray[0]);
                     outputText += Environment.NewLine + $"File Created: " + Environment.NewLine + DeDupetitle + Environment.NewLine + Environment.NewLine;
@@ -397,7 +403,7 @@
                     outputText = "Move Pages using text." + Environment.NewLine + "No pagination." + Environment.NewLine + Environment.NewLine;
                     outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine + Environment.NewLine;
 
-                    string outputPdf = await movpdf.MovePaginateText(pdfFile);
+                    string outputPdf = await moveModel.MovePaginateText(pdfFile);
                     var pageArray = outputPdf.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
                     var DeDupetitle = System.IO.Path.GetFileName(pageArray[0]);
                     outputText += Environment.NewLine + $"File Created: " + Environment.NewLine + DeDupetitle + Environment.NewLine + Environment.NewLine;
@@ -411,16 +417,12 @@
             {
                 outputText = "Paginate Document." + Environment.NewLine + Environment.NewLine;
                 outputText += Environment.NewLine + $"Processing file: " + Environment.NewLine + pdfFile.Name + Environment.NewLine + Environment.NewLine;
-                Stream stream = pdfFile.OpenReadStream();
-                var filename = new MemoryStream();
-                await stream.CopyToAsync(filename);
-                filename.Position = 0;
                 var cleanedTitle = pdfFile.Name.Replace(".pdf", "");
                 var outputFileToUser = $"{cleanedTitle} Paginated.pdf";
                 var outputFile = System.IO.Path.Combine("./", outputFileToUser);
                 try
                 {
-                    using (var pdfOut = new PdfDocument(new PdfReader(filename), new PdfWriter(outputFile)))
+                    using (var pdfOut = new PdfDocument(new PdfReader(msPDF), new PdfWriter(outputFile)))
                     {
                         Document document = new Document(pdfOut);
 
