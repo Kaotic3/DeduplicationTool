@@ -29,30 +29,21 @@ namespace DeduplicationTool.Models
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public async Task<string> MovePaginateText(IBrowserFile pdfFile)
+        public async Task<MemoryStream> MovePaginateText(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-            Stream stream = pdfFile.OpenReadStream();
-            var filename = new MemoryStream();
-            await stream.CopyToAsync(filename);
-            filename.Position = 0;
-            PdfReader pdfReader = new PdfReader(filename);
-            PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
             List<int> pageOrder = new List<int>();
             StringBuilder textBuilder = new StringBuilder();
-
-            var newTitle = pdfFile.Name.Replace(".pdf", "");
-            var outputFileToUser = $"{newTitle} Moved on Text.pdf";
-            var outputFile = System.IO.Path.Combine("./", outputFileToUser);
+            var outstream = new MemoryStream();
             int appendixPosition = 0;
             try
             {
-                using (var pdfIn = new PdfDocument(new PdfReader(filename)))
+                using (var pdfIn = new PdfDocument(new PdfReader(pdfFile)))
                 {
-                    using (var pdfOut = new PdfDocument(new PdfWriter(outputFile)))
+                    using (var pdfOut = new PdfDocument(new PdfWriter(outstream)))
                     {
                         for (int page = 1; page <= pdfIn.GetNumberOfPages(); page++)
                         {
@@ -60,7 +51,7 @@ namespace DeduplicationTool.Models
                             try
                             {
                                 var strategy = new SimpleTextExtractionStrategy();
-                                string pageContent = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(page), strategy);
+                                string pageContent = PdfTextExtractor.GetTextFromPage(pdfIn.GetPage(page), strategy);
                                 pageContent = pageContent.Trim();
                                 var pageToCompare = PDFAnalysis.TrimAllWithInplaceCharArray(pageContent);
 
@@ -85,7 +76,7 @@ namespace DeduplicationTool.Models
                             }
                             catch (Exception ex)
                             {
-                                return $"Unable to parse {filename} - Reason: {ex}";
+                                
                             }
                         }
                         var dupePage = duplicatePages.IndexOf(textBuilder.ToString());
@@ -125,45 +116,32 @@ namespace DeduplicationTool.Models
             }
             catch (Exception ex)
             {
-                return $"Failed to read {filename} - read {ex.Message}";
+                
             }
-            StringBuilder toSend = new StringBuilder();
-            toSend.Append(outputFile + Environment.NewLine);
-            foreach (var page in pageOrder)
-            {
-                toSend.Append(page.ToString() + Environment.NewLine);
-            }
-            return toSend.ToString();
+            
+            return outstream;
         }
         /// <summary>
         /// Moves duplicate pages based on the text on the page to the end of the document. Inserts an appendix page. Keeps a record of moved pages for repagination.
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public async Task<string> MoveRepaginateText(IBrowserFile pdfFile)
+        public async Task<(MemoryStream, string)> MoveRepaginateText(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-            Stream stream = pdfFile.OpenReadStream();
-            var filename = new MemoryStream();
-            await stream.CopyToAsync(filename);
-            filename.Position = 0;
-            PdfReader pdfReader = new PdfReader(filename);
-            PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
             List<int> pageOrder = new List<int>();
             StringBuilder textBuilder = new StringBuilder();
-
-            var newTitle = pdfFile.Name.Replace(".pdf", "");
-            var outputFileToUser = $"{newTitle} Moved on Text.pdf";
-            var outputFile = System.IO.Path.Combine("./", outputFileToUser);
+            var outstream = new MemoryStream();
+            
             int appendixPosition = 0;
             try
             {
-                using (var pdfIn = new PdfDocument(new PdfReader(filename)))
+                using (var pdfIn = new PdfDocument(new PdfReader(pdfFile)))
                 {
-                    using (var pdfOut = new PdfDocument(new PdfWriter(outputFile)))
+                    using (var pdfOut = new PdfDocument(new PdfWriter(outstream)))
                     {
                         for (int page = 1; page <= pdfIn.GetNumberOfPages(); page++)
                         {
@@ -171,7 +149,7 @@ namespace DeduplicationTool.Models
                             try
                             {
                                 var strategy = new SimpleTextExtractionStrategy();
-                                string pageContent = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(page), strategy);
+                                string pageContent = PdfTextExtractor.GetTextFromPage(pdfIn.GetPage(page), strategy);
                                 pageContent = pageContent.Trim();
                                 var pageToCompare = PDFAnalysis.TrimAllWithInplaceCharArray(pageContent);
 
@@ -196,7 +174,7 @@ namespace DeduplicationTool.Models
                             }
                             catch (Exception ex)
                             {
-                                return $"Unable to parse {filename} - Reason: {ex}";
+                                
                             }
                         }
                         var dupePage = duplicatePages.IndexOf(textBuilder.ToString());
@@ -236,45 +214,35 @@ namespace DeduplicationTool.Models
             }
             catch (Exception ex)
             {
-                return $"Failed to read {filename} - read {ex.Message}";
+                
             }
             StringBuilder toSend = new StringBuilder();
-            toSend.Append(outputFile + Environment.NewLine);
             foreach (var page in pageOrder)
             {
                 toSend.Append(page.ToString() + Environment.NewLine);
             }
-            return toSend.ToString();
+            return (outstream, toSend.ToString());
         }
         /// <summary>
         /// Moves duplicate pages based on text on the page to the end of the document. Inserts an appendix page. Different process to repagination.
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public async Task<string> MovePaginateImages(IBrowserFile pdfFile)
+        public async Task<MemoryStream> MovePaginateImages(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-            Stream stream = pdfFile.OpenReadStream();
-            var filename = new MemoryStream();
-            await stream.CopyToAsync(filename);
-            filename.Position = 0;
-            PdfReader pdfReader = new PdfReader(filename);
-            PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
             StringBuilder textBuilder = new StringBuilder();
             List<int> pageOrder = new List<int>();
-
-
-            var newTitle = pdfFile.Name.Replace(".pdf", "");
-            var outputFileToUser = $"{newTitle} Moved on Images.pdf";
-            var outputFile = System.IO.Path.Combine("./", outputFileToUser);
+            var outstream = new MemoryStream();
+            
             try
             {
-                using (var pdfIn = new PdfDocument(new PdfReader(filename)))
+                using (var pdfIn = new PdfDocument(new PdfReader(pdfFile)))
                 {
-                    using (var pdfOut = new PdfDocument(new PdfWriter(outputFile)))
+                    using (var pdfOut = new PdfDocument(new PdfWriter(outstream)))
                     {
                         for (int page = 1; page <= pdfIn.GetNumberOfPages(); page++)
                         {
@@ -304,7 +272,7 @@ namespace DeduplicationTool.Models
                             }
                             catch (Exception ex)
                             {
-                                return $"Unable to parse {filename} - Reason: {ex}";
+                                
                             }
                         }
                         var dupePage = duplicatePages.IndexOf(textBuilder.ToString());
@@ -345,46 +313,35 @@ namespace DeduplicationTool.Models
             }
             catch (Exception ex)
             {
-                return $"Failed to read {filename} - read {ex.Message}";
+                
             }
             StringBuilder toSend = new StringBuilder();
-            toSend.Append(outputFile + Environment.NewLine);
             foreach (var page in pageOrder)
             {
                 toSend.Append(page.ToString() + Environment.NewLine);
             }
 
-            return toSend.ToString();
+            return outstream;
         }
         /// <summary>
         /// Moves duplicate pages based on images and text on the page to the end of the document. Inserts an appendix page. Keeps a record of moved pages for repagination.
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public async Task<string> MoveRepaginateImages(IBrowserFile pdfFile)
+        public async Task<(MemoryStream, string)> MoveRepaginateImages(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-            Stream stream = pdfFile.OpenReadStream();
-            var filename = new MemoryStream();
-            await stream.CopyToAsync(filename);
-            filename.Position = 0;
-            PdfReader pdfReader = new PdfReader(filename);
-            PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
             StringBuilder textBuilder = new StringBuilder();
             List<int> pageOrder = new List<int>();
-
-
-            var newTitle = pdfFile.Name.Replace(".pdf", "");
-            var outputFileToUser = $"{newTitle} Moved on Images.pdf";
-            var outputFile = System.IO.Path.Combine("./", outputFileToUser);
+            var outstream = new MemoryStream();
             try
             {
-                using (var pdfIn = new PdfDocument(new PdfReader(filename)))
+                using (var pdfIn = new PdfDocument(new PdfReader(pdfFile)))
                 {
-                    using (var pdfOut = new PdfDocument(new PdfWriter(outputFile)))
+                    using (var pdfOut = new PdfDocument(new PdfWriter(outstream)))
                     {
                         for (int page = 1; page <= pdfIn.GetNumberOfPages(); page++)
                         {
@@ -414,7 +371,7 @@ namespace DeduplicationTool.Models
                             }
                             catch (Exception ex)
                             {
-                                return $"Unable to parse {filename} - Reason: {ex}";
+                                
                             }
                         }
                         var dupePage = duplicatePages.IndexOf(textBuilder.ToString());
@@ -455,15 +412,14 @@ namespace DeduplicationTool.Models
             }
             catch (Exception ex)
             {
-                return $"Failed to read {filename} - read {ex.Message}";
+                
             }
             StringBuilder toSend = new StringBuilder();
-            toSend.Append(outputFile + Environment.NewLine);
             foreach (var page in pageOrder)
             {
                 toSend.Append(page.ToString() + Environment.NewLine);
             }
-            return toSend.ToString();
+            return (outstream, toSend.ToString());
         }
     }
 }

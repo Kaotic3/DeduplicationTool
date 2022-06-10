@@ -24,25 +24,17 @@ namespace DeduplicationTool.Models
         {
 
         }
-        public async Task<(byte[], string)> ReplacePaginateText(IBrowserFile pdfFile, string placeHolder)
+        public async Task<byte[]> ReplacePaginateText(MemoryStream pdfFile, string placeHolder)
         {
             SHA256 sha256 = SHA256.Create();
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-
-            Stream stream = pdfFile.OpenReadStream();
-            var filename = new MemoryStream();
-            await stream.CopyToAsync(filename);
-            filename.Position = 0;
-
             List<string> duplicatePages = new List<string>();
             StringBuilder textBuilder = new StringBuilder();
-
-            var newTitle = pdfFile.Name.Replace(".pdf", "");
-            var outputFileToUser = $"{newTitle} Text Placeholder Paginated.pdf";
+            
             var outStream = new MemoryStream();
 
-            using (var pdfIn = new PdfDocument(new PdfReader(filename)))
+            using (var pdfIn = new PdfDocument(new PdfReader(pdfFile)))
             {
                 using (var pdfOut = new PdfDocument(new PdfWriter(outStream)))
                 {
@@ -119,25 +111,19 @@ namespace DeduplicationTool.Models
                     }
                 }
             }
-            return (outStream.ToArray(), outputFileToUser);
+            return outStream.ToArray();
         }
-        public async Task<(byte[], string)> ReplacePaginateImages(IBrowserFile pdfFile, string placeHolder)
+        public async Task<byte[]> ReplacePaginateImages(MemoryStream pdfFile, string placeHolder)
         {
             SHA256 sha256 = SHA256.Create();
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-            Stream stream = pdfFile.OpenReadStream();
-            var filename = new MemoryStream();
-            await stream.CopyToAsync(filename);
-            filename.Position = 0;
             List<string> duplicatePages = new List<string>();
             StringBuilder textBuilder = new StringBuilder();
-
-            var newTitle = pdfFile.Name.Replace(".pdf", "");
-            var outputFileToUser = $"{newTitle} Images Placeholder Paginated.pdf";
+            
             var outStream = new MemoryStream();
 
-            using (var pdfIn = new PdfDocument(new PdfReader(filename)))
+            using (var pdfIn = new PdfDocument(new PdfReader(pdfFile)))
             {
                 using (var pdfOut = new PdfDocument(new PdfWriter(outStream)))
                 {
@@ -202,7 +188,7 @@ namespace DeduplicationTool.Models
                     }
                 }
             }
-            return (outStream.ToArray(), outputFileToUser);
+            return outStream.ToArray();
         }
     }
 }

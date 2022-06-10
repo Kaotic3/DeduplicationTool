@@ -21,16 +21,12 @@ namespace DeduplicationTool.Models
         {
 
         }
-        public static string PaginateDocument(string filename)
+        public static byte[] PaginateDocument(MemoryStream pdfFile)
         {
-            var path = System.IO.Path.GetDirectoryName(filename);
-            var title = System.IO.Path.GetFileName(filename);
-            var cleanedTitle = title.Replace(".pdf", "");
-            var outputFileToUser = $"{cleanedTitle} Paginated.pdf";
-            var outputFile = System.IO.Path.Combine(path, outputFileToUser);
+            var outStream = new MemoryStream();
             try
             {
-                using (var pdfOut = new PdfDocument(new PdfReader(filename), new PdfWriter(outputFile)))
+                using (var pdfOut = new PdfDocument(new PdfReader(pdfFile), new PdfWriter(outStream)))
                 {
                     Document document = new Document(pdfOut);
 
@@ -46,9 +42,9 @@ namespace DeduplicationTool.Models
             }
             catch (Exception ex)
             {
-                return $"Failed to repaginate document due to {ex.Message}";
+
             }
-            return outputFile;
+            return outStream.ToArray();
         }
         public static string RepaginateDocument(string filename, int pageCount, List<int> pagesRemoved)
         {
@@ -90,19 +86,15 @@ namespace DeduplicationTool.Models
         // TODO: You got it for a single page - now do it for multiple pages.
 
 
-        public static string RepaginateMovedPages(string filename, int pageCount, List<int> pagesMoved)
+        public static byte[] RepaginateMovedPages(MemoryStream pdfFile, int pageCount, List<int> pagesMoved)
         {
-            var path = System.IO.Path.GetDirectoryName(filename);
-            var title = System.IO.Path.GetFileName(filename);
-            var cleanedTitle = title.Replace(".pdf", "");
-            var outputFileToUser = $"{cleanedTitle} Repaginated.pdf";
-            var outputFile = System.IO.Path.Combine(path, outputFileToUser);
             List<int> pageToCount = new List<int>();
             List<int> pagesToMiss = new List<int>();
+            var outStream = new MemoryStream();
             int k = 1;
             try
             {
-                using (var pdfOut = new PdfDocument(new PdfReader(filename), new PdfWriter(outputFile)))
+                using (var pdfOut = new PdfDocument(new PdfReader(pdfFile), new PdfWriter(outStream)))
                 {
                     Document document = new Document(pdfOut);
 
@@ -125,10 +117,10 @@ namespace DeduplicationTool.Models
             }
             catch (Exception ex)
             {
-                return $"Failed to paginate {filename} due to {ex.Message}";
+                
             }
 
-            return outputFile;
+            return outStream.ToArray();
         }
     }
 }

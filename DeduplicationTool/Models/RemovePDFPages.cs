@@ -17,30 +17,20 @@ namespace DeduplicationTool.Models
         {
 
         }
-        public async Task<string> RemovePaginateText(IBrowserFile pdfFile)
+        public async Task<MemoryStream> RemovePaginateText(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-            Stream stream = pdfFile.OpenReadStream();
-            var filename = new MemoryStream();
-            await stream.CopyToAsync(filename);
-            filename.Position = 0;
-            PdfReader pdfReader = new PdfReader(filename);
-            PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
             StringBuilder pagesRemoved = new StringBuilder();
             List<int> pageOrder = new List<int>();
             StringBuilder textBuilder = new StringBuilder();
+            var outStream = new MemoryStream();
 
-            var newTitle = pdfFile.Name.Replace(".pdf", "");
-            var outputFileToUser = $"{newTitle} Removed on Text.pdf";
-            var outputFile = System.IO.Path.Combine("./", outputFileToUser);
-            pagesRemoved.Append(outputFile + Environment.NewLine);
-
-            using (var pdfIn = new PdfDocument(new PdfReader(filename)))
+            using (var pdfIn = new PdfDocument(new PdfReader(pdfFile)))
             {
-                using (var pdfOut = new PdfDocument(new PdfWriter(outputFile)))
+                using (var pdfOut = new PdfDocument(new PdfWriter(outStream)))
                 {
                     for (int page = 1; page <= pdfIn.GetNumberOfPages(); page++)
                     {
@@ -48,7 +38,7 @@ namespace DeduplicationTool.Models
                         try
                         {
                             var strategy = new SimpleTextExtractionStrategy();
-                            string pageContent = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(page), strategy);
+                            string pageContent = PdfTextExtractor.GetTextFromPage(pdfIn.GetPage(page), strategy);
                             pageContent = pageContent.Trim();
                             var pageToCompare = PDFAnalysis.TrimAllWithInplaceCharArray(pageContent);
 
@@ -73,36 +63,29 @@ namespace DeduplicationTool.Models
                         }
                         catch (Exception ex)
                         {
-                            return $"Unable to parse {filename} - Reason: {ex}";
+
                         }
                     }
                 }
             }
-            return pagesRemoved.ToString();
+            return outStream;
         }
-        public async Task<string> RemovePaginateImages(IBrowserFile pdfFile)
+        public async Task<MemoryStream> RemovePaginateImages(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
             
             HashSet<string> pages = new HashSet<string>();
             List<int> pagesToCopy = new List<int>();
-            Stream stream = pdfFile.OpenReadStream();
-            var filename = new MemoryStream();
-            await stream.CopyToAsync(filename);
-            filename.Position = 0;
-            PdfReader pdfReader = new PdfReader(filename);
+            PdfReader pdfReader = new PdfReader(pdfFile);
             PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
             StringBuilder textBuilder = new StringBuilder();
             StringBuilder pagesRemoved = new StringBuilder();
+            var outStream = new MemoryStream();
 
-            var newTitle = pdfFile.Name.Replace(".pdf", "");
-            var outputFileToUser = $"{newTitle} Removed on Images.pdf";
-            var outputFile = System.IO.Path.Combine("./", outputFileToUser);
-            pagesRemoved.Append(outputFile + Environment.NewLine);
-            using (var pdfIn = new PdfDocument(new PdfReader(filename)))
+            using (var pdfIn = new PdfDocument(new PdfReader(pdfFile)))
             {
-                using (var pdfOut = new PdfDocument(new PdfWriter(outputFile)))
+                using (var pdfOut = new PdfDocument(new PdfWriter(outStream)))
                 {
                     for (int page = 1; page <= pdfIn.GetNumberOfPages(); page++)
                     {
@@ -131,37 +114,25 @@ namespace DeduplicationTool.Models
                         }
                         catch (Exception ex)
                         {
-                            return $"Unable to parse {filename} - Reason: {ex}";
+                            
                         }
                     }
                 }
             }
-            return pagesRemoved.ToString();
+            return outStream;
         }
-        public async Task<string> RemoveRepaginateText(IBrowserFile pdfFile)
+        public async Task<(MemoryStream, string)> RemoveRepaginateText(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
             HashSet<string> pages = new HashSet<string>();
-            List<int> pagesToCopy = new List<int>();
-            Stream stream = pdfFile.OpenReadStream();
-            var filename = new MemoryStream();
-            await stream.CopyToAsync(filename);
-            filename.Position = 0;
-            PdfReader pdfReader = new PdfReader(filename);
-            PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
             StringBuilder pagesRemoved = new StringBuilder();
-            List<int> pageOrder = new List<int>();
             StringBuilder textBuilder = new StringBuilder();
+            var outStream = new MemoryStream();
 
-            var newTitle = pdfFile.Name.Replace(".pdf", "");
-            var outputFileToUser = $"{newTitle} Removed on Text.pdf";
-            var outputFile = System.IO.Path.Combine("./", outputFileToUser);
-            pagesRemoved.Append(outputFile + Environment.NewLine);
-
-            using (var pdfIn = new PdfDocument(new PdfReader(filename)))
+            using (var pdfIn = new PdfDocument(new PdfReader(pdfFile)))
             {
-                using (var pdfOut = new PdfDocument(new PdfWriter(outputFile)))
+                using (var pdfOut = new PdfDocument(new PdfWriter(outStream)))
                 {
                     for (int page = 1; page <= pdfIn.GetNumberOfPages(); page++)
                     {
@@ -169,7 +140,7 @@ namespace DeduplicationTool.Models
                         try
                         {
                             var strategy = new SimpleTextExtractionStrategy();
-                            string pageContent = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(page), strategy);
+                            string pageContent = PdfTextExtractor.GetTextFromPage(pdfIn.GetPage(page), strategy);
                             pageContent = pageContent.Trim();
                             var pageToCompare = PDFAnalysis.TrimAllWithInplaceCharArray(pageContent);
 
@@ -194,35 +165,25 @@ namespace DeduplicationTool.Models
                         }
                         catch (Exception ex)
                         {
-                            return $"Unable to parse {filename} - Reason: {ex}";
+
                         }
                     }
                 }
             }
-            return pagesRemoved.ToString();
+            return (outStream, pagesRemoved.ToString());
         }
-        public async Task<string> RemoveRepaginateImages(IBrowserFile pdfFile)
+        public async Task<(MemoryStream, string)> RemoveRepaginateImages(MemoryStream pdfFile)
         {
             SHA256 sha256 = SHA256.Create();
             HashSet<string> pages = new HashSet<string>();
-            List<int> pagesToCopy = new List<int>();
-            Stream stream = pdfFile.OpenReadStream();
-            var filename = new MemoryStream();
-            await stream.CopyToAsync(filename);
-            filename.Position = 0;
-            PdfReader pdfReader = new PdfReader(filename);
-            PdfDocument pdfDoc = new PdfDocument(pdfReader);
             List<string> duplicatePages = new List<string>();
             StringBuilder textBuilder = new StringBuilder();
             StringBuilder pagesRemoved = new StringBuilder();
+            var outStream = new MemoryStream();
 
-            var newTitle = pdfFile.Name.Replace(".pdf", "");
-            var outputFileToUser = $"{newTitle} Removed on Images.pdf";
-            var outputFile = System.IO.Path.Combine("./", outputFileToUser);
-            pagesRemoved.Append(outputFile + Environment.NewLine);
-            using (var pdfIn = new PdfDocument(new PdfReader(filename)))
+            using (var pdfIn = new PdfDocument(new PdfReader(pdfFile)))
             {
-                using (var pdfOut = new PdfDocument(new PdfWriter(outputFile)))
+                using (var pdfOut = new PdfDocument(new PdfWriter(outStream)))
                 {
                     for (int page = 1; page <= pdfIn.GetNumberOfPages(); page++)
                     {
@@ -251,12 +212,12 @@ namespace DeduplicationTool.Models
                         }
                         catch (Exception ex)
                         {
-                            return $"Unable to parse {filename} - Reason: {ex}";
+                            
                         }
                     }
                 }
             }
-            return pagesRemoved.ToString();
+            return (outStream, pagesRemoved.ToString());
         }
     }
 }
