@@ -1,7 +1,7 @@
 ﻿@page "/"
 
 <style>
-    body{
+  body {
         background-color: #292C33;
         color: white;
     }
@@ -11,7 +11,7 @@
 
 <h3 class="text-center">Welcome to the PDF Tools page</h3>
 
-<p class="text-center">Please select a tool for the navigation bar on the left.</p>
+<p class="text-center">Please select a tool for the navigation bar on the left or if on a mobile device, from drop down menu above.</p>
 <text>&nbsp; &nbsp;&nbsp;</text>
 <p></p>
 <p>The tools available are:</p>
@@ -19,15 +19,21 @@
 
 <ToolItem Name="PDF Analysis"></ToolItem>
 <ToolItem Description="Analyses a PDF for duplicate pages"></ToolItem>
-<p>Select the "Contains images" button if your PDF contains images.</p>
+<p>The tool will anaylse a PDF document, either using Text or Text and Images, and report back on the total number of pages and the total number of unique pages.  The tool will report on which pages are duplicated in the document.</p>
 
 <ToolItem Name="PDF Processing"></ToolItem>
 <ToolItem Description="Processes changes to a new PDF"></ToolItem>
-<p>Select the options to create the PDF that you require.</p>
+<p>The tool offers several options for processing a PDF document.</p>
+<p style="margin: 20px">Replace: This will replace each duplicated page with a placeholder using standard language.</p>
+<p style="margin: 20px">Remove: This will remove each duplicated page entirely.</p>
+<p style="margin: 20px">Move: This will insert an Appendix page, and after that page the tool will place each duplicated page.</p>
+<p style="margin: 20px">Pagination: This will paginate the document after Move or Remove has been applied.</p>
+<p style="margin: 20px">Repagination: This will repaginate the document with the original page numbers, after Move or Remove have been applied.</p>
 
 <ToolItem Name="PDF Redactions"></ToolItem>
 <ToolItem Description="Redacts Elements in a PDF file"></ToolItem>
-<p>Enter the term to be redacted or the Regular Expression to be applied.</p>
+<p>The tool can apply redactions involving a single word or phrase.  Or you can enter a Regular Expression and the tool will redact any patterns matching that Regular Expression.</p>
+<p>The redaction is accomplished by removing the underlying text.  It cannot be recovered.</p>
 
 
 
