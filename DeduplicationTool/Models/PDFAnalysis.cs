@@ -17,7 +17,7 @@ namespace DeduplicationTool.Models
     public class PDFAnalysis
     {
         private SHA256 Sha256 = SHA256.Create();
-        private int MAXALLOWEDSIZE = 15000000;
+        private int MAXALLOWEDSIZE = 20000000;
         public PDFAnalysis()
         {
 
@@ -29,34 +29,6 @@ namespace DeduplicationTool.Models
             pageCount = pdfDoc.GetNumberOfPages();
 
             return pageCount.ToString();
-        }
-        public static string PDFUniquePagesHashImages(string filename)
-        {
-            return string.Empty;
-        }
-        public async Task<string> PDFUniquePagesHash(MemoryStream pdfFile)
-        {
-            PdfReader pdfReader = new PdfReader(pdfFile);
-            PdfDocument pdfDoc = new PdfDocument(pdfReader);
-
-            StringBuilder sb = new StringBuilder();
-            for (int page = 1; page <= pdfDoc.GetNumberOfPages(); page++)
-            {
-                try
-                {
-                    var strategy = new SimpleTextExtractionStrategy();
-                    string pageContent = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(page), strategy);
-                    var hashValue = pageContent.GetHashCode();
-
-                    sb.Append(hashValue.ToString() + Environment.NewLine);
-
-                }
-                catch (Exception ex)
-                {
-                    
-                }
-            }
-            return sb.ToString();
         }
         public async Task<string> PDFUniquePagesShaImages(MemoryStream pdfFile)
         {
@@ -133,69 +105,6 @@ namespace DeduplicationTool.Models
                 }
             }
             return sb.ToString();
-        }
-        public static string RecreatePDF(string filename)
-        {
-            var path = System.IO.Path.GetDirectoryName(filename);
-            var title = System.IO.Path.GetFileName(filename);
-            HashSet<string> pages = new HashSet<string>();
-            List<int> pagesToCopy = new List<int>();
-
-            PdfReader pdfReader = new PdfReader(filename);
-            PdfDocument pdfDoc = new PdfDocument(pdfReader);
-            List<int> duplicatePages = new List<int>();
-            var newTitle = title.Replace(".pdf", "");
-            var outputFile = System.IO.Path.Combine(path, $"{newTitle} Deduplicated.pdf");
-
-            var pageContentToo = "";
-            for (int page = 1; page <= pdfDoc.GetNumberOfPages(); page++)
-            {
-                try
-                {
-
-                    var strategy = new SimpleTextExtractionStrategy();
-                    string pageContent = PdfTextExtractor.GetTextFromPage(pdfDoc.GetPage(page), strategy);
-
-                    var hashValue = pageContent.GetHashCode();
-                    if (!pages.Contains(hashValue.ToString()))
-                    {
-                        pagesToCopy.Add(page);
-                        pages.Add(hashValue.ToString());
-                    }
-                    else
-                    {
-                        duplicatePages.Add(page);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    return $"Unable to parse {filename} - Reason: {ex}";
-                }
-            }
-            using (var pdfIn = new PdfDocument(new PdfReader(filename)))
-            {
-                using (var pdfOut = new PdfDocument(new PdfWriter(outputFile)))
-                {
-                    foreach (var pageToCopy in pagesToCopy)
-                    {
-                        pdfIn.CopyPagesTo(pageToCopy, pageToCopy, pdfOut, pageToCopy + 1);
-                    }
-
-                    Document document = new Document(pdfOut);
-                    for (int i = 1; i <= pages.Count(); i++)
-                    {
-                        document.ShowTextAligned(new Paragraph(String.Format("Page " + i + " of " + pages.Count())), 559, 806, i, TextAlignment.RIGHT, VerticalAlignment.TOP, 0);
-                    }
-                }
-            }
-            StringBuilder sbCopyPagse = new StringBuilder();
-
-            foreach (var item in duplicatePages)
-            {
-                sbCopyPagse.Append($"Page: {item}" + Environment.NewLine);
-            }
-
-            return $"Duplicated pages removed" + Environment.NewLine + $"{sbCopyPagse.ToString()}";
         }
         public static string TrimAllWithInplaceCharArray(string str)
         {

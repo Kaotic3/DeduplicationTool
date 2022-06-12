@@ -9,6 +9,7 @@
 @using System.Text;
 @using System.Threading.Tasks;
 @using System.Windows;
+@using System.Text.RegularExpressions
 @inject IJSRuntime jsRuntime
 
 <PageTitle>PDF Redactions Page</PageTitle>
@@ -67,6 +68,7 @@
     string? outputText;
     public string? placeHolder { get; set; }
     public byte[]? downloadFile;
+    string[] toRedactArray;
     public string? fileName;
     private int MAXALLOWEDSIZE = 15000000;
 
@@ -77,8 +79,31 @@
     }
     private async Task OnFileSelection(InputFileChangeEventArgs e)
     {
+        outputText = "";
+        if (placeHolder != "" && placeHolder != null)
+        {
+            toRedactArray = placeHolder.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var item in toRedactArray)
+            {
+                if (VerifyRegEx(item))
+                {
+
+                }
+                else
+                {
+                    outputText = "You have entered a Regular Expression that is invalid.";
+                    return;
+                }
+
+            }
+        }
         PDFRedaction redactPdf = new PDFRedaction();
         IBrowserFile pdfFile = e.File;
+        if (!pdfFile.Name.Contains(".pdf") && !pdfFile.Name.Contains(".PDF"))
+        {
+            outputText = "You must select a PDF file";
+            return;
+        }
         Stream stream = pdfFile.OpenReadStream(MAXALLOWEDSIZE);
         var msPDF = new MemoryStream();
         await stream.CopyToAsync(msPDF);
@@ -86,12 +111,35 @@
 
         outputText = "Redacting document." + Environment.NewLine;
         outputText += Environment.NewLine + $"Processing file: " + pdfFile.Name + Environment.NewLine;
-        var toRedactArray = placeHolder.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
         var outputPdf = await redactPdf.RedactText(msPDF, toRedactArray);
         var outputFileToUser = $"{pdfFile.Name.Replace(".pdf", "")} Redacted.pdf";
         outputText += Environment.NewLine + $"File Created: " + Environment.NewLine + outputFileToUser + Environment.NewLine;
         downloadFile = outputPdf;
         fileName = outputFileToUser;
-        outputText += $"Processing Complete";
+        outputText += Environment.NewLine + $"Processing Complete";
+    }
+    public static bool VerifyRegEx(string testPattern)
+    {
+        bool isValid = true;
+    
+        if ((testPattern != null) && (testPattern.Trim( ).Length > 0))
+        {
+            try
+            {
+                Regex.Match("", testPattern);
+            }
+            catch (ArgumentException)
+            {
+                // BAD PATTERN: Syntax error
+                isValid = false;
+            }
+        }
+        else
+        {
+            //BAD PATTERN: Pattern is null or blank
+            isValid = false;
+        }
+    
+        return (isValid);
     }
 }

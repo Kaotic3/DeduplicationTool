@@ -54,11 +54,11 @@
 <text>&nbsp; &nbsp;&nbsp;</text>
 
 <text>&nbsp; &nbsp;&nbsp;</text>
-@*<div class="col-lg-3">
-        <div class="form-group" style="margin-left: 10px; margin-right: 40px">
-            <button class="btn btn-primary" @onclick="Reset">Reset</button>
-        </div>
-    </div>*@
+<div class="col-lg-3">
+    <div class="form-group" style="margin-left: 10px; margin-right: 40px">
+        <button class="btn btn-primary" @onclick="Reset">Reset</button>
+    </div>
+</div>
 
 
 
@@ -73,11 +73,18 @@
     {
         PDFAnalysis analysisModel = new PDFAnalysis();
         // Clear the text boxes
-        Reset();
+        outputText = "";
+        StateHasChanged();
+        await Task.Delay(1);
         StringBuilder sb = new StringBuilder();
         int pageCount = 0;
         // Takes user selected file
         IBrowserFile pdfFile = e.File;
+        if (!pdfFile.Name.Contains(".pdf") && !pdfFile.Name.Contains(".PDF"))
+        {
+            outputText = "You must select a PDF file";
+            return;
+        }
 
         outputText += $"Processing {pdfFile.Name}" + Environment.NewLine + Environment.NewLine;
         
@@ -102,7 +109,7 @@
         {
             var uniqueImagesResult = await analysisModel.PDFUniquePagesShaImages(msPDF);
             pdfUniqueArray = uniqueImagesResult.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-            outputText += $"Comparing pages using text and images." + Environment.NewLine;
+            outputText += $"Comparing pages using image processing." + Environment.NewLine;
         }
         List<string> pages = new List<string>(pdfUniqueArray);
         List<string> matched = new List<string>();
