@@ -6,6 +6,12 @@
         background-color: #292C33;
         color: white;
     }
+    .choice-name{
+        text-indent: 40px;
+    }
+    .choice-description{
+        text-indent: 80px;
+    }
 </style>
 
 
@@ -28,20 +34,34 @@
 <ToolItem Name="PDF Analysis"></ToolItem>
 <ToolItem Description="Analyses a PDF for duplicate pages"></ToolItem>
 <p>The tool will anaylse a PDF document, either using Text or Text and Images, and report back on the total number of pages and the total number of unique pages.  The tool will report on which pages are duplicated in the document.</p>
-
+<div>
+    <text>&nbsp; &nbsp;&nbsp;</text>
+</div>
 <ToolItem Name="PDF Processing"></ToolItem>
 <ToolItem Description="Processes changes to a new PDF"></ToolItem>
 <p>The tool offers several options for processing a PDF document.</p>
-<p style="margin: 20px">Replace: This will replace each duplicated page with a placeholder using standard language.</p>
-<p style="margin: 20px">Remove: This will remove each duplicated page entirely.</p>
-<p style="margin: 20px">Move: This will insert an Appendix page, and after that page the tool will place each duplicated page.</p>
-<p style="margin: 20px">Pagination: This will paginate the document after Move or Remove has been applied.</p>
-<p style="margin: 20px">Repagination: This will repaginate the document with the original page numbers, after Move or Remove have been applied.</p>
-
+<div class="choice-name">
+    Replace:</div><div class="choice-description">This will replace each duplicated page with a placeholder referencing the duplicate page.<br />
+</div>
+<div class="choice-name">
+    Remove:</div><div class="choice-description">This will remove each duplicated page entirely.<br />
+</div>
+<div class="choice-name">
+    Move:</div><div class="choice-description">This will insert an Appendix page, and after that page the tool will place each duplicate page.<br />
+</div>
+<div class="choice-name">
+    Pagination:</div><div class="choice-description">This will paginate the document after Move or Remove has been applied.<br />
+</div>
+<div class="choice-name">
+    Repagination:</div><div class="choice-description">This will repaginate the document with the original page numbers, after Move or Remove have been applied.<br />
+</div>
+<div>
+    <text>&nbsp; &nbsp;&nbsp;</text>
+</div>
 <ToolItem Name="PDF Redactions"></ToolItem>
 <ToolItem Description="Redacts Elements in a PDF file"></ToolItem>
 <p>The tool can apply redactions involving a single word or phrase.  Or you can enter a Regular Expression and the tool will redact any patterns matching that Regular Expression.</p>
-<p>The redaction is accomplished by removing the underlying text.  It cannot be recovered.</p>
+<p>The redaction is accomplished by removing the underlying text.  It cannot be recovered.  Please see the FAQ relating to the original document, which remains untouched.</p>
 
 
 
