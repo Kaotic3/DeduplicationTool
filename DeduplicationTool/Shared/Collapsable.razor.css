@@ -1,0 +1,16 @@
+﻿.collapsable-panel {
+    padding: 25px;
+    background-color: #292C33;
+    overflow: hidden;
+    font-size: 16px;
+}
+
+.collapsable .title {
+    display: table-cell;
+    font-size: 16px;
+}
+
+.collapsable .value {
+    display: table-cell;
+    text-align: right;
+}

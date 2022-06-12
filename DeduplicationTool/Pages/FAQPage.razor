@@ -2,204 +2,69 @@
 @inject IJSRuntime JSRuntime;
 
 <style>
-    *,
-    *::before,
-    *::after{
-        margin: 0;
-        padding: 0;
-        box-sizing: inherit;
-    }
     body{
         background-color: #292C33;
         color: white;
-    }
-    html{
-        box-sizing: border-box;
-    }
-    section{
-        width: 100%;
-        height: 100vh;
-        background-color: #292C33;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-    }
-    .container{
-        width: 100%;
-        max-width: 80rem;
-        margin: 0 auto;
-        padding: 0 1.5rem;
-        font-size: 16px;
-    }
-    .accordian-item{
-        background-color: #292C33;
-        border-radius: .4rem;
-        margin-bottom: 1rem;
-        padding: 1rem;
-        box-shadow: .5rem 2px .5rem rgba(0,0,0,.1);
-        font-size: 16px;
-    }
-    .accordian-link{
-        font-size: 1.6rem;
-        color: rgba(255,255,255,.8);
-        text-decoration: none;
-        background-color: #292C33;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 1rem 0;
-        font-size: 16px;
-    }
-    .accordian-link i{
-        color: #e7d5ff;
-        padding: .25rem;
-        font-size: 16px;
-
-    }
-    .accordian-link .ion-md-remove{
-        display: none;
-        font-size: 16px;
-    }
-    .answer{
-        max-height: 0;
-        overflow: hidden;
-        position: relative;
-        background-color: #212838;
-        transition: max-height 650ms;
-        font-size: 16px;
-    }
-    .answer::before{
-        content: "";
-        position: absolute;
-        width: .6rem;
-        height: 90%;
-        background-color: #8fc460;
-        top: 50%;
-        left: 0;
-        transform: translateY(-50%);
-        font-size: 16px;
-    }
-    .answer p{
-        color: rgba(255, 255, 255, .6);
-        font-size: 1.4rem;
-        padding: 2rem;
-        font-size: 16px;
-    }
-    .accordian-item:target .answer{
-        max-height: 20rem;
-
-    }
-    .accordian-item:target .accordian-link .ion-md-add{
-        display: none;
-    }
-    .accordian-item:target .accordian-link .ion-md-remove{
-        display: block;
     }
 </style>
 
 <PageTitle>FAQ Page</PageTitle>
 
-<h3 class="text-center">Welcome to the Frequently Asked Questions page</h3>
+<h3 class="text-center"></h3>
 <text>&nbsp; &nbsp;&nbsp;</text>
 <text>&nbsp; &nbsp;&nbsp;</text>
-<p class="text-center">This page will be updated with any questions that are frequently asked.</p>
+<p class="text-center"></p>
 <text>&nbsp; &nbsp;&nbsp;</text>
 <text>&nbsp; &nbsp;&nbsp;</text>
-<head>
-    <title>Accordian</title>
-   <link href="https://unpkg.com/ionicons@4.5.10-0/dist/css/ionicons.min.css" rel="stylesheet" />
-</head>
-<body>
-    <section>
-        <div class="container">
-            <div class="accordian">
-                <div class="accordian-item" id="question1">
-                    <a class="accordian-link" href="faq#question1" target="_top">
-                        My data is confidential, can I use this tool?
-                        <i class="icon ion-md-add"></i>
-                        <i class="icon ion-md-remove"></i>
-                    </a>
-                    <div class="answer">
-                        <p>Yes, the tool does not transfer or store any data beyond being in RAM on your computer.  The entire application exists in your browser and the documents are processed by your browser. When you close your browser or navigate to another page all of the data that was stored in memory by your browser is released to be used by other applications.</p>
-                    </div>
-                </div>
-                <div class="accordian-item" id="question8">
-                    <a class="accordian-link" href="faq#question8" target="_top">
-                        How can I test the assertion set out above?
-                        <i class="icon ion-md-add"></i>
-                        <i class="icon ion-md-remove"></i>
-                    </a>
-                    <div class="answer">
-                        <p>There are a couple of ways to check.  The first is simply to disconnect from the internet.  The tool will still work in your browser, demonstrating that it does not need to send any data to complete the work. The other way to check is to open the console in your browser, here is a link to a how-to guide: <a href="" @onclick="@(async ()=>await JSRuntime.InvokeAsync<object>("open", "https://appuals.com/open-browser-console/", "_blank"))">Find your Browser Console</a>. Once you have opened the console, you can use the 'Network' tab in the console - this will show you the amount of data being sent and recieved.  Test it to see how much data is being sent and received on the BBC or your favourite website.  Then use a publicly available PDF on this site and you will see no data being sent or received.</p>
-                    </div>
-                </div>
-                <div class="accordian-item" id="question7">
-                    <a class="accordian-link" href="faq#question7" target="_top">
-                        Will this change my original PDF?
-                        <i class="icon ion-md-add"></i>
-                        <i class="icon ion-md-remove"></i>
-                    </a>
-                    <div class="answer">
-                        <p>No.  The tool reads the original PDF into memory - it does not make any changes to the file on your harddrive.  The tool creates a new PDF file from that data making any of the changes you have requested.  The original PDF will remain on your harddrive in the same condition it was in before you used the tool.</p>
-                    </div>
-                </div>
-                <div class="accordian-item" id="question2">
-                    <a class="accordian-link" href="faq#question2" target="_top">
-                        Is there any limit to PDF size?
-                        <i class="icon ion-md-add"></i>
-                        <i class="icon ion-md-remove"></i>
-                    </a>
-                    <div class="answer">
-                        <p>Yes, the current size limit is 20mb. As the application keeps all of the information in RAM, and it uses that information on occasion to create a new PDF, which is also kept in RAM, and it uses RAM to process that PDF - it can be quite memory intensive.  If requests are made to increase the size and it does not impact on usability for other users, then the size can be increased in the future.</p>
-                    </div>
-                </div>
-                <div class="accordian-item" id="question3">
-                    <a class="accordian-link" href="faq#question3" target="_top">
-                        What does 'Use Image Processing' mean?
-                        <i class="icon ion-md-add"></i>
-                        <i class="icon ion-md-remove"></i>
-                    </a>
-                    <div class="answer">
-                        <p>A PDF can contain Text and Images, this may make a difference on whether a page is a duplicate or not.  If your PDF contains Graphs or pictures, then you may consider using Images.  However, you should be aware that pages with just visible text, may not be identical when considered as images, due to 'whitespace' such as extra padding, or extra carriage returns which may not be visible on the page.</p>
-                    </div>
-                </div>
-                 <div class="accordian-item" id="question4">
-                    <a class="accordian-link" href="faq#question4" target="_top">
-                        When I navigate to another page on this site, I lose all of the information on that page when I return!?
-                        <i class="icon ion-md-add"></i>
-                        <i class="icon ion-md-remove"></i>
-                    </a>
-                    <div class="answer">
-                        <p>Yes, see the first answer.  No data is stored beyond being in your RAM for a short period of time.  If you leave the page, the RAM is released and it is not possible to recover that information.  This includes all of the information displayed on the page and the data being used to create a new PDF.  If you navigate away you will need to redo the work.</p>
-                    </div>
-                </div>
-                <div class="accordian-item" id="question5">
-                    <a class="accordian-link" href="faq#question5" target="_top">
-                        Why do two different PDFs of the same size take a different amount of time to process?
-                        <i class="icon ion-md-add"></i>
-                        <i class="icon ion-md-remove"></i>
-                    </a>
-                    <div class="answer">
-                        <p>Some PDFs are optimised, and some are not.  An optimised PDF can be processed much faster than an unoptimised PDF</p>
-                    </div>
-                </div>
-                <div class="accordian-item" id="question6">
-                    <a class="accordian-link" href="faq#question6" target="_top">
-                        The tool says every single page is a duplicate when I can see they are not?
-                        <i class="icon ion-md-add"></i>
-                        <i class="icon ion-md-remove"></i>
-                    </a>
-                    <div class="answer">
-                        <p>Try using Image Processing, it may be that your PDF does not have Optical Character Recognition - which means that when the tool attempts to read the text, it returns as empty and as all pages are empty, they are all duplicates.  Using the Image Processing may provide the tool with at least some information to differentiate pages of the PDF.  Or you could OCR your document using your regular PDF tools.  If feasible, I may add OCR functionality to this tool.</p>
-                    </div>
-                </div>
-                
-            </div>
-        </div>
-    </section>
-</body>
+<p class="text-center"></p>
+<text>&nbsp; &nbsp;&nbsp;</text>
+<text>&nbsp; &nbsp;&nbsp;</text>
+
+<Collapsable Title="1. My data is confidential, can I use this tool?" Collapsed="true" Value="">
+    Yes, the tool does not transfer or store any data beyond being in RAM on your computer.  The entire application exists in your browser and the documents are processed by your browser. When you close your browser or navigate to another page on this site all of the data that was stored in memory by your browser is released to be used by other applications
+</Collapsable>
+<div>
+    <text>&nbsp; &nbsp;&nbsp;</text>
+</div>
+<Collapsable Title="2. How can I test the assertion set out above?" Collapsed="true" Value="">
+    There are a couple of ways to check.  The first is simply to disconnect from the internet.  The tool will still work in your browser, demonstrating that it does not need to send any data to complete the work. The other way to check is to open the console in your browser, here is a link to a how-to guide: <a href="https://appuals.com/open-browser-console/" target="_blank">Find your Browser Console</a>.<br /><br /> Once you have opened the console, you can use the 'Network' tab in the console - this will show you the amount of data being sent and recieved.  Test it to see how much data is being sent and received on the BBC or your favourite website.  Then use a publicly available PDF on this site and you will see no data being sent or received.
+</Collapsable>
+<div>
+    <text>&nbsp; &nbsp;&nbsp;</text>
+</div>
+<Collapsable Title="3. Will this change my original PDF?" Collapsed="true" Value="">
+    No.  The tool reads the original PDF into memory - it does not make any changes to the file on your harddrive.  The tool creates a new PDF file from that data making any of the changes you have requested.  The original PDF will remain on your harddrive in the same condition it was in before you used the tool.
+</Collapsable>
+<div>
+    <text>&nbsp; &nbsp;&nbsp;</text>
+</div>
+<Collapsable Title="4. Is there any limit to PDF size?" Collapsed="true" Value="">
+    Yes, the current size limit is 20mb. As the application keeps all of the information in RAM, and it uses that information on occasion to create a new PDF, which is also kept in RAM, and it uses RAM to process that PDF - it can be quite memory intensive.<br /><br />If requests are made to increase the size and it does not impact on usability for other users, then the size can be increased in the future.
+</Collapsable>
+<div>
+    <text>&nbsp; &nbsp;&nbsp;</text>
+</div>
+<Collapsable Title="5. What does 'Use Image Processing' mean?" Collapsed="true" Value="">
+    A PDF can contain Text and Images, this may make a difference on whether a page is a duplicate or not.  If your PDF contains Graphs or pictures, then you may consider using Images.<br /><br />You should be aware that pages with just visible text, may not be identical when considered as images, due to 'whitespace' such as extra padding, or extra carriage returns which may not be visible on the page.
+</Collapsable>
+<div>
+    <text>&nbsp; &nbsp;&nbsp;</text>
+</div>
+<Collapsable Title="6. When I navigate to another page on this site, I lose all of the information on the page when I return!?" Collapsed="true" Value="">
+    Yes, see the first answer.  No data is stored beyond being in your RAM for a short period of time.  If you leave the page, the RAM is released and it is not possible to recover that information.  This includes all of the information displayed on the page and the data being used to create a new PDF.<br /><br />If you navigate away you will need to redo the work.  This does not impact on you looking at other websites in other tabs, which has no bearing on this site.
+</Collapsable>
+<div>
+    <text>&nbsp; &nbsp;&nbsp;</text>
+</div>
+<Collapsable Title="7. Why do two different PDFs of the same size take a different amount of time to process?" Collapsed="true" Value="">
+    Some PDFs are optimised, and some are not.  An optimised PDF can be processed much faster than an unoptimised PDF.<br /><br />The document created by this tool will be optimised and if further changes are required to the resulting PDF, it will often be faster to use a PDF created with this tool than to use the original.
+</Collapsable>
+<div>
+    <text>&nbsp; &nbsp;&nbsp;</text>
+</div>
+<Collapsable Title="8. The tool says every single page is a duplicate when I can see they are not?" Collapsed="true" Value="">
+    Try using Image Processing, it may be that your PDF does not have Optical Character Recognition - which means that when the tool attempts to read the text, it returns as empty and as all pages are empty, they are all duplicates.<br /><br />Using the Image Processing may provide the tool with at least some information to differentiate pages of the PDF.  Or you could OCR your document using your regular PDF tools.<br /><br />If feasible, I may add OCR functionality to this tool.
+</Collapsable>
 
 @code {
 
