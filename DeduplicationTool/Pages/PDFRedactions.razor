@@ -97,11 +97,21 @@
 
             }
         }
+        else
+        {
+            outputText = "You have not entered a value to be redacted.";
+            return;
+        }
         PDFRedaction redactPdf = new PDFRedaction();
         IBrowserFile pdfFile = e.File;
         if (!pdfFile.Name.Contains(".pdf") && !pdfFile.Name.Contains(".PDF"))
         {
             outputText = "You must select a PDF file";
+            return;
+        }
+        if (pdfFile.Size > 20000000)
+        {
+            outputText = "The PDF you have chosen is too large, the limit is 20mb.  If your file says 20mb, then it may be rounding down.";
             return;
         }
         Stream stream = pdfFile.OpenReadStream(MAXALLOWEDSIZE);
