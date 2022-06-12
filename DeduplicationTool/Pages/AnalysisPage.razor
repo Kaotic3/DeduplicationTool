@@ -91,7 +91,7 @@
             return;
         }
         outputText += $"Processing {pdfFile.Name}" + Environment.NewLine + Environment.NewLine;
-        
+
         // Creates a Memory Stream of the File
         Stream stream = pdfFile.OpenReadStream(MAXALLOWEDSIZE);
         var msPDF = new MemoryStream();
@@ -163,6 +163,7 @@
     public void Reset()
     {
         outputText = "";
+        containsImages = false;
     }
 
 }

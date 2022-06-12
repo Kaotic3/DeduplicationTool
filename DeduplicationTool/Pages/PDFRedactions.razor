@@ -48,7 +48,7 @@
 <div>
     <div style="margin-left: 10px; margin-right: 40px">
        <p>Enter Text to Redact or enter Regular Expression</p>
-       <textarea cols="100" rows="3" @bind="placeHolder"></textarea>
+       <textarea cols="100" rows="3" @bind="regexRedact"></textarea>
     </div>
 </div>
 <text>&nbsp; &nbsp;&nbsp;</text>
@@ -66,7 +66,7 @@
 
 @code {
     string? outputText;
-    public string? placeHolder { get; set; }
+    public string? regexRedact { get; set; }
     public byte[]? downloadFile;
     string[] toRedactArray;
     public string? fileName;
@@ -77,12 +77,17 @@
         string base64String = Convert.ToBase64String(downloadFile, 0, downloadFile.Length);
         await jsRuntime.InvokeVoidAsync("downloadFile", "application/pdf", base64String, fileName);
     }
+    public void Reset()
+    {
+        outputText = "";
+        regexRedact = "";
+    }
     private async Task OnFileSelection(InputFileChangeEventArgs e)
     {
         outputText = "";
-        if (placeHolder != "" && placeHolder != null)
+        if (regexRedact != "" && regexRedact != null)
         {
-            toRedactArray = placeHolder.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+            toRedactArray = regexRedact.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var item in toRedactArray)
             {
                 if (VerifyRegEx(item))
