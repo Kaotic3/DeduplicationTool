@@ -167,7 +167,7 @@
             outputText = "You must select a PDF file";
             return;
         }
-        if (pdfFile.Size > 20000000)
+        if (pdfFile.Size > MAXALLOWEDSIZE)
         {
             outputText = "The PDF you have chosen is too large, the limit is 20mb.  If your file says 20mb, then it may be rounding down.";
             return;
