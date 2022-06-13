@@ -25,6 +25,34 @@
     .btn {
         background-color: #4d7985;
     }
+    .space{
+        width: 80px;
+        height: auto;
+        display: inline-block;
+    }
+    .spinner-border {
+        display: inline-block;
+        border: .25em solid #ddd;
+        border-right-color: #FF7F00;
+        border-radius: 50%;
+        width: 2rem;
+        height: 2rem;
+    }
+    .spinner-border.animate {
+        animation: loading .75s linear infinite;
+    }
+    .like-boostrap {
+        border: .25em solid #FF7F00;
+        border-right-color: #fff;
+    }
+    @@keyframes loading {
+    0% {
+        transform: rotate(0);
+    }
+    100% {
+        transform: rotate(360deg);
+        }
+    }
 </style>
 
 
@@ -54,10 +82,14 @@
 <text>&nbsp; &nbsp;&nbsp;</text>
 
 <text>&nbsp; &nbsp;&nbsp;</text>
-<div class="col-lg-3">
-    <div class="form-group" style="margin-left: 10px; margin-right: 40px">
-        <button class="btn btn-primary" @onclick="Reset">Reset</button>
-    </div>
+<div style="display: flex;">
+        <button class="btn btn-primary" @onclick="(async () => await Analyse())">Begin Analysis</button>
+        @if (IsLoading)
+        {
+            <div class="spinner-border like-boostrap animate" style="margin:10px"></div>
+        }
+        <div class="space"></div>
+        <button class="btn btn-secondary" @onclick="Reset">Reset</button>
 </div>
 
 
@@ -68,18 +100,31 @@
     public bool containsImages { get; set; }
     public string[] pdfUniqueArray;
     private int MAXALLOWEDSIZE = 20000000;
+    public IBrowserFile pdfFile;
+    public bool docLoaded { get; set; }
+    public bool IsLoading { get; set; }
 
-    private async Task OnFileSelection(InputFileChangeEventArgs e)
+    public async Task OnFileSelection(InputFileChangeEventArgs e)
     {
+        pdfFile = e.File;
+        docLoaded = true;
+        Reset();
+    }
+    public async Task Analyse()
+    {
+        if (!docLoaded)
+        {
+            return;
+        }
+        IsLoading = true;
+        await Task.Yield();
         PDFAnalysis analysisModel = new PDFAnalysis();
         // Clear the text boxes
-        outputText = "";
         StateHasChanged();
         await Task.Delay(1);
         StringBuilder sb = new StringBuilder();
         int pageCount = 0;
         // Takes user selected file
-        IBrowserFile pdfFile = e.File;
         if (!pdfFile.Name.Contains(".pdf") && !pdfFile.Name.Contains(".PDF"))
         {
             outputText = "You must select a PDF file";
@@ -159,11 +204,12 @@
             outputText += sb.ToString();
         }
         outputText += "Processing Complete";
+        IsLoading = false;
+        docLoaded = false;
     }
     public void Reset()
     {
         outputText = "";
-        containsImages = false;
     }
 
 }

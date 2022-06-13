@@ -27,6 +27,34 @@
     .btn {
         background-color: #4d7985;
     }
+    .space{
+        width: 80px;
+        height: auto;
+        display: inline-block;
+    }
+    .spinner-border {
+        display: inline-block;
+        border: .25em solid #ddd;
+        border-right-color: #FF7F00;
+        border-radius: 50%;
+        width: 2rem;
+        height: 2rem;
+    }
+    .spinner-border.animate {
+        animation: loading .75s linear infinite;
+    }
+    .like-boostrap {
+        border: .25em solid #FF7F00;
+        border-right-color: #fff;
+    }
+    @@keyframes loading {
+    0% {
+        transform: rotate(0);
+    }
+    100% {
+        transform: rotate(360deg);
+        }
+    }
 </style>
 
 <h3>PDF Redactions</h3>
@@ -59,7 +87,18 @@
     </div>
 </div>
 <text>&nbsp; &nbsp;&nbsp;</text>
-<button class="btn btn-primary" @onclick="DownloadPDF">Download PDF File</button>
+<div style="display: flex;">
+    <button class="btn btn-primary" @onclick="(async () => await Redact())">Begin Redacting</button>
+    @if (IsLoading)
+    {
+        <div class="spinner-border like-boostrap animate" style="margin:10px"></div>
+    }
+    <div class="space"></div>
+    <button class="btn btn-secondary" @onclick="Reset">Reset</button>
+    <div class="space"></div>
+    <button class="btn btn-primary" @onclick="DownloadPDF">Download PDF</button>
+</div>
+
 <text>&nbsp; &nbsp;&nbsp;</text>
 
 
@@ -70,7 +109,10 @@
     public byte[]? downloadFile;
     string[] toRedactArray;
     public string? fileName;
-    private int MAXALLOWEDSIZE = 15000000;
+    private int MAXALLOWEDSIZE = 20000000;
+    public bool IsLoading { get; set; }
+    public IBrowserFile pdfFile;
+    public bool docLoaded { get; set; }
 
     private async Task DownloadPDF()
     {
@@ -81,9 +123,20 @@
     {
         outputText = "";
         regexRedact = "";
+        docLoaded = false;
     }
     private async Task OnFileSelection(InputFileChangeEventArgs e)
     {
+        pdfFile = e.File;
+        docLoaded = true;
+    }
+    private async Task Redact()
+    {
+        if (!docLoaded)
+        {
+            return;
+        }
+        IsLoading = true;
         outputText = "";
         if (regexRedact != "" && regexRedact != null)
         {
@@ -108,7 +161,7 @@
             return;
         }
         PDFRedaction redactPdf = new PDFRedaction();
-        IBrowserFile pdfFile = e.File;
+        
         if (!pdfFile.Name.Contains(".pdf") && !pdfFile.Name.Contains(".PDF"))
         {
             outputText = "You must select a PDF file";
@@ -132,6 +185,8 @@
         downloadFile = outputPdf;
         fileName = outputFileToUser;
         outputText += Environment.NewLine + $"Processing Complete";
+        IsLoading = false;
+        docLoaded = false;
     }
     public static bool VerifyRegEx(string testPattern)
     {
